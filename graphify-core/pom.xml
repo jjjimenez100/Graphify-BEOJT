@@ -20,9 +20,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.toro.ojtbe.jimenez.Graphify</groupId>
-            <artifactId>graphify-processors</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <version>1.0-rc4</version>
         </dependency>
     </dependencies>
 
@@ -33,13 +33,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
+                    <compilerArgument>-proc:none</compilerArgument>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <annotationProcessors>
-                        <proc>
-                            io.toro.ojtbe.jimenez.Graphify.processors.RepositoryProcessor
-                        </proc>
-                    </annotationProcessors>
                 </configuration>
             </plugin>
         </plugins>
