@@ -2,13 +2,14 @@ package io.toro.ojtbe.jimenez.Graphify.core.poet;
 
 import com.squareup.javapoet.*;
 import io.toro.ojtbe.jimenez.Graphify.core.poet.wrappers.*;
-import io.toro.ojtbe.jimenez.Graphify.core.poet.wrappers.Class;
+import io.toro.ojtbe.jimenez.Graphify.core.poet.wrappers.ClassWrapper;
 
 import javax.lang.model.element.Modifier;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +17,13 @@ import java.util.List;
 final class PoetServiceImpl implements PoetService{
     private final List<String> logs;
 
+    private final List<TypeName> primitives;
+
     PoetServiceImpl(){
-        logs = new ArrayList<>();
+        this.logs = new ArrayList<>();
+        this.primitives = new ArrayList<>();
         addLog("Instance created");
+        initPrimitives();
     }
 
     @Override
@@ -49,25 +54,25 @@ final class PoetServiceImpl implements PoetService{
     }
 
     @Override
-    public boolean writeClass(String packageStatement,
-                              String path,
-                              Class classRep) {
+    public boolean writeClass(String path,
+                              ClassWrapper classWrapperRep) {
+        String packageStatement = classWrapperRep.getPackageStatement();
         addLog(
                 String.format(
                         "Writing class: %s at path: %s " +
                         "under package: %s",
-                        classRep.getName(),
+                        classWrapperRep.getName(),
                         path,
                         packageStatement
                 )
         );
-        return write(packageStatement, path, createClass(classRep));
+        return write(packageStatement, path, createClass(classWrapperRep));
     }
 
     @Override
-    public boolean writeInterface(String packageStatement,
-                                  String path,
+    public boolean writeInterface(String path,
                                   Interface interfaceRep) {
+        String packageStatement = interfaceRep.getPackageStatement();
         addLog(
                 String.format(
                         "Writing interface: %s at path: %s " +
@@ -85,15 +90,18 @@ final class PoetServiceImpl implements PoetService{
                           TypeSpec typeSpec){
         JavaFile file = JavaFile
                 .builder(packageStatement, typeSpec)
+                .skipJavaLangImports(true)
+                .indent("   ")
                 .build();
-
         try {
             file.writeTo(Paths.get(path));
             addLog("Write success");
 
             return true;
         } catch (IOException e) {
-            addLog("Encountered IOException: " + e.getMessage());
+            addLog("Encountered IOException: " + e.getMessage()
+            + ", Path: " + path + ", TypeSpec: " + typeSpec);
+            debug(path);
             e.printStackTrace();
 
             return false;
@@ -131,41 +139,41 @@ final class PoetServiceImpl implements PoetService{
         return interfaceBuilder.build();
     }
 
-    private TypeSpec createClass(Class classRep){
+    private TypeSpec createClass(ClassWrapper classWrapperRep){
        TypeSpec.Builder classBuilder
-               = TypeSpec.classBuilder(classRep.getName());
+               = TypeSpec.classBuilder(classWrapperRep.getName());
 
-       List<Modifier> modifiers = classRep.getModifiers();
+       List<Modifier> modifiers = classWrapperRep.getModifiers();
        if(modifiers.size() != 0){
            classBuilder.addModifiers(
-                   classRep.getModifiers().toArray(new Modifier[]{})
+                   classWrapperRep.getModifiers().toArray(new Modifier[]{})
            );
        }
 
-       for(ClassNameWrapper interfaceRep : classRep.getInterfaces()){
+       for(ClassNameWrapper interfaceRep : classWrapperRep.getInterfaces()){
            classBuilder.addSuperinterface(toClassName(interfaceRep));
        }
 
-       for(Method method: classRep.getMethods()){
+       for(Method method: classWrapperRep.getMethods()){
            classBuilder.addMethod(createMethod(method));
        }
 
-       for(ClassNameWrapper annotation: classRep.getAnnotations()){
+       for(ClassNameWrapper annotation: classWrapperRep.getAnnotations()){
            classBuilder.addAnnotation(toClassName(annotation));
        }
 
-       for(Variable field: classRep.getFields()){
+       for(Variable field: classWrapperRep.getFields()){
            classBuilder.addField(createField(field));
        }
 
-       for(String typeName: classRep.getTypeVariables()){
+       for(String typeName: classWrapperRep.getTypeVariables()){
            classBuilder.addTypeVariable(
                    TypeVariableName.get(typeName)
            );
        }
 
        List<ClassNameWrapper> parentTypes
-               = classRep.getParentTypes();
+               = classWrapperRep.getParentTypes();
 
        if (parentTypes.size() > 1) {
             classBuilder.superclass(
@@ -181,21 +189,19 @@ final class PoetServiceImpl implements PoetService{
     }
 
     private MethodSpec createMethod(Method method){
-        MethodSpec.Builder methodBuilder
-                = MethodSpec.methodBuilder(method.getName());
-
+        MethodSpec.Builder methodBuilder;
         List<ClassNameWrapper> type = method.getTypes();
+
+        if(type.isEmpty()){
+            methodBuilder = MethodSpec.constructorBuilder();
+        } else {
+            methodBuilder = MethodSpec.methodBuilder(method.getName());
+        }
 
         if(type.size() > 1){
             methodBuilder.returns(toParameterizedTypeName(type));
         } else if(type.size() == 1){
             methodBuilder.returns(toClassName(type.get(0)));
-        } else {
-            RuntimeException e = new RuntimeException("At least a " +
-                    "single type is required for method: " +
-                    method.getName());
-            addLog(e.getMessage());
-            throw e;
         }
 
         for(Variable parameter: method.getParameters()){
@@ -301,17 +307,43 @@ final class PoetServiceImpl implements PoetService{
         return fieldBuilder.build();
     }
 
+    private void initPrimitives(){
+        primitives.add(TypeName.BYTE);
+        primitives.add(TypeName.BOOLEAN);
+        primitives.add(TypeName.SHORT);
+        primitives.add(TypeName.INT);
+        primitives.add(TypeName.LONG);
+        primitives.add(TypeName.CHAR);
+        primitives.add(TypeName.FLOAT);
+        primitives.add(TypeName.DOUBLE);
+    }
+
+    private ClassName toBoxedType(ClassName name){
+        for(TypeName primitive: primitives){
+
+            if(name.toString().equals(primitive.toString())){
+
+                return (ClassName) primitive.box();
+            }
+        }
+        return name;
+    }
+
     private ClassName toClassName(ClassNameWrapper classNameWrapperRep){
-        return ClassName.get(
+        ClassName className = ClassName.get(
                 classNameWrapperRep.getPackageName(),
                 classNameWrapperRep.getClassName()
         );
+
+
+        return toBoxedType(className);
     }
+
 
     private ParameterizedTypeName toParameterizedTypeName(
             List<ClassNameWrapper> classNameWrapperReps){
        ClassName rawType = toClassName(classNameWrapperReps.get(0));
-
+        System.out.println("Raw type: " + rawType);
        classNameWrapperReps = classNameWrapperReps.subList(
                1, classNameWrapperReps.size()
        );

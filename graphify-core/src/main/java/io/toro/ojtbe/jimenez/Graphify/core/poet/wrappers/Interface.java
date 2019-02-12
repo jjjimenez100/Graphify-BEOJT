@@ -8,12 +8,14 @@ import java.util.Objects;
 
 public final class Interface {
     private final String name;
+    private final String packageStatement;
     private final List<Modifier> modifiers;
     private final List<ClassNameWrapper> annotations;
     private final List<ClassNameWrapper> parentTypes;
 
     private Interface(Builder builder){
         this.name = builder.name;
+        this.packageStatement = builder.packageStatement;
         this.modifiers = Collections.unmodifiableList(builder.modifiers);
         this.annotations = Collections.unmodifiableList(builder.annotations);
         this.parentTypes = Collections.unmodifiableList(builder.parentTypes);
@@ -21,19 +23,17 @@ public final class Interface {
 
     public static class Builder{
         private final String name;
+        private final String packageStatement;
         private final List<Modifier> modifiers;
         private final List<ClassNameWrapper> annotations;
         private final List<ClassNameWrapper> parentTypes;
 
-        public Builder(String name){
+        public Builder(String name, String packageStatement){
             this.name = name;
+            this.packageStatement = packageStatement;
             this.modifiers = new ArrayList<>();
             this.annotations = new ArrayList<>();
             this.parentTypes = new ArrayList<>();
-        }
-
-        public Builder parent(ClassNameWrapper parent){
-            return this;
         }
 
         public Builder addModifier(String modifier){
@@ -67,8 +67,13 @@ public final class Interface {
     public List<ClassNameWrapper> getAnnotations() {
         return annotations;
     }
+
     public List<ClassNameWrapper> getParentTypes() {
         return parentTypes;
+    }
+
+    public String getPackageStatement() {
+        return packageStatement;
     }
 
     @Override
@@ -76,21 +81,23 @@ public final class Interface {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Interface that = (Interface) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(modifiers, that.modifiers) &&
-                Objects.equals(annotations, that.annotations) &&
-                Objects.equals(parentTypes, that.parentTypes);
+        return name.equals(that.name) &&
+                packageStatement.equals(that.packageStatement) &&
+                modifiers.equals(that.modifiers) &&
+                annotations.equals(that.annotations) &&
+                parentTypes.equals(that.parentTypes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, modifiers, annotations, parentTypes);
+        return Objects.hash(name, packageStatement, modifiers, annotations, parentTypes);
     }
 
     @Override
     public String toString() {
         return "Interface{" +
                 "name='" + name + '\'' +
+                ", packageStatement='" + packageStatement + '\'' +
                 ", modifiers=" + modifiers +
                 ", annotations=" + annotations +
                 ", parentTypes=" + parentTypes +

@@ -31,14 +31,13 @@ public final class Method {
         private final List<Statement> statements;
         private final List<ClassNameWrapper> types;
 
-        public Builder(String name, ClassNameWrapper types){
+        public Builder(String name){
             this.name = name;
             this.parameters = new ArrayList<>();
             this.modifiers = new ArrayList<>();
             this.annotations = new ArrayList<>();
             this.statements = new ArrayList<>();
             this.types = new ArrayList<>();
-            this.types.add(types);
         }
 
         public Builder addStatement(Statement statement){
