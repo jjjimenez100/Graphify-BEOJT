@@ -1,4 +1,4 @@
-package io.toro.ojtbe.jimenez.Graphify.core;
+package io.toro.ojtbe.jimenez.Graphify.core.poet;
 
 import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetFactory;
 import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetService;
