@@ -1,4 +1,4 @@
-package io.toro.ojtbe.jimenez.Graphify.core.poet.generators;
+package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
 import java.util.Collections;
 import java.util.HashMap;
