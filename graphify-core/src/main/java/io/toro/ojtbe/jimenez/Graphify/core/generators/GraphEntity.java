@@ -1,4 +1,4 @@
-package io.toro.ojtbe.jimenez.Graphify.core.poet.generators;
+package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,9 +7,11 @@ import java.util.Objects;
 
 /**
  * Represents a GraphModel and holds specific properties to
- * be used by the annotation processor for schema generation
+ * be used by the annotation processor for
+ * repository, service, schema, and query resolver generation
  *
  * @author Joshua Jimenez
+ *
  */
 public final class GraphEntity {
 
