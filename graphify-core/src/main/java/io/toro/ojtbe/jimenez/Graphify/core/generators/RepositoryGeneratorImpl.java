@@ -8,11 +8,11 @@ import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetUtil;
 
 import javax.lang.model.element.Modifier;
 
-public final class RepositoryGeneratorImpl implements RepositoryGenerator {
+final class RepositoryGeneratorImpl implements RepositoryGenerator {
     private final String defaultSuffix;
     private final Modifier defaultAccess;
 
-    public RepositoryGeneratorImpl(String defaultSuffix,
+    RepositoryGeneratorImpl(String defaultSuffix,
                                    Modifier defaultAccess){
         this.defaultSuffix = defaultSuffix;
         this.defaultAccess = defaultAccess;
