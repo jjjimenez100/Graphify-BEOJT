@@ -7,11 +7,11 @@ import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetUtil;
 
 import javax.lang.model.element.Modifier;
 
-public final class ServiceGeneratorImpl implements ServiceGenerator{
+final class ServiceGeneratorImpl implements ServiceGenerator{
     private final String defaultSuffix;
     private final Modifier[] modifiers;
 
-    public ServiceGeneratorImpl(String defaultSuffix,
+    ServiceGeneratorImpl(String defaultSuffix,
                                 Modifier... modifiers){
         this.defaultSuffix = defaultSuffix;
         this.modifiers = modifiers;
