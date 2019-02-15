@@ -138,8 +138,8 @@ public class RepositoryGeneratorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    // poet forbids a class with a name of null
-    public void givenGraphEntityWithNoClassName_whenCallingGenerateRepository_thenThrowNPE() throws RepositoryGeneratorException{
+    // poet forbids a class with a name of null as a parameter for its Javafile.write method
+    public void givenGraphEntityWithNoClassName_whenCallingGenerateRepository_thenThrowIllegalArgumentException() throws RepositoryGeneratorException{
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
 
