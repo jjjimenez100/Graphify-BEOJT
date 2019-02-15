@@ -1,6 +1,6 @@
-package io.toro.ojtbe.jimenez.Graphify.core.generators.service;
+package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
-public final class ServiceGeneratorException extends RuntimeException {
+public final class ServiceGeneratorException extends Exception {
     public ServiceGeneratorException() {
         super();
     }
