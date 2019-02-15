@@ -1,153 +1,160 @@
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
-import io.toro.ojtbe.jimenez.Graphify.core.generators.GraphEntity;
-import io.toro.ojtbe.jimenez.Graphify.core.generators.repository.RepositoryGenerator;
-import io.toro.ojtbe.jimenez.Graphify.core.generators.repository.RepositoryGeneratorImpl;
-import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetFactory;
-import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetService;
-import io.toro.ojtbe.jimenez.Graphify.core.poet.wrappers.ClassNameWrapper;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.TypeSpec;
+import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
+import static org.junit.Assert.*;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import static org.junit.Assert.assertNotNull;
+import javax.lang.model.element.Modifier;
 
 public class RepositoryGeneratorTest {
+
     @Test
-    public void givenGraphEntityWithEmptyModelDirectory_whenGeneratingRepositories_thenReturnClassWrapper(){
+    public void givenGraphEntity_whenCallingGenerateRepository_thenReturnTypeSpec() throws RepositoryGeneratorException{
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
+
         GraphEntity graphEntity = new GraphEntity.Builder()
-                .className("TestClass")
-                .idName("id")
-                .idType("int")
+                .property("id", "int")
+                .packageName("io.test")
                 .modelDirectory("")
-                .packageName("io.toro")
-                .property("Test", "TestType")
+                .idType("int")
+                .idName("id")
+                .className("Person")
                 .build();
+        ClassName parent = ClassName.get(Mockito.anyString(), Mockito.anyString());
 
-        PoetService codeGen
-                = new PoetFactory().getPoetService();
-        RepositoryGenerator repositoryGenerator = new RepositoryGeneratorImpl(
-                        codeGen, "Repository", "PUBLIC"
-        );
-        ClassNameWrapper crud = new ClassNameWrapper(
-                "org.springframework.data.repository", "CrudRepository"
-        );
-        assertNotNull(repositoryGenerator.generateRepository(graphEntity, crud));
+        Object result = repositoryGenerator.generateRepository(graphEntity, parent);
+
+        assertNotNull(result);
+        assertTrue(result instanceof TypeSpec);
     }
 
     @Test
-    public void givenGraphEntityWithModelDirectory_whenGeneratingRepositories_thenReturnClassWrapper(){
+    public void givenGraphEntityWithNoProperties_whenCallingGenerateRepository_thenReturnTypeSpec() throws RepositoryGeneratorException{
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
+
         GraphEntity graphEntity = new GraphEntity.Builder()
-                .className("TestClass")
-                .idName("id")
+                .packageName("io.test")
+                .modelDirectory("")
                 .idType("int")
-                .modelDirectory("src/test/java")
-                .packageName("io.toro")
-                .property("Test", "TestType")
+                .idName("id")
+                .className("Person")
                 .build();
 
-        PoetService codeGen = new PoetFactory().getPoetService();
-        RepositoryGenerator repositoryGenerator = new RepositoryGeneratorImpl(
-                codeGen, "Repository", "PUBLIC"
-        );
-        ClassNameWrapper crud = new ClassNameWrapper(
-                "org.springframework.data.repository", "CrudRepository"
-        );
-        assertNotNull(repositoryGenerator.generateRepository(graphEntity, crud));
+        ClassName parent = ClassName.get(Mockito.anyString(), Mockito.anyString());
+
+        Object result = repositoryGenerator.generateRepository(graphEntity, parent);
+
+        assertNotNull(result);
+        assertTrue(result instanceof TypeSpec);
+    }
+
+    @Test(expected = NullPointerException.class)
+    // Java poet tries to access a null class name
+    public void givenGraphEntityWithNoPackageName_whenCallingGenerateRepository_thenThrowNPE() throws RepositoryGeneratorException{
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
+
+        GraphEntity graphEntity = new GraphEntity.Builder()
+                .property("id", "int")
+                .modelDirectory("")
+                .idType("int")
+                .idName("id")
+                .className("Person")
+                .build();
+        ClassName parent = ClassName.get(Mockito.anyString(), Mockito.anyString());
+
+        Object result = repositoryGenerator.generateRepository(graphEntity, parent);
+
+        assertNotNull(result);
+        assertTrue(result instanceof TypeSpec);
+    }
+
+    @Test(expected = NullPointerException.class)
+    //java poet tries to access a path that is null
+    public void givenGraphEntityWithNoModelDirectory_whenCallingGenerateRepository_thenThrowNPE() throws RepositoryGeneratorException{
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
+
+        GraphEntity graphEntity = new GraphEntity.Builder()
+                .property("id", "int")
+                .packageName("io.test")
+                .idType("int")
+                .idName("id")
+                .className("Person")
+                .build();
+        ClassName parent = ClassName.get(Mockito.anyString(), Mockito.anyString());
+
+        Object result = repositoryGenerator.generateRepository(graphEntity, parent);
+
+        assertNotNull(result);
+        assertTrue(result instanceof TypeSpec);
+    }
+
+    @Test(expected = NullPointerException.class)
+    // Poet throws an NPE because of accessing a null class name
+    public void givenGraphEntityWithNoIdType_whenCallingGenerateRepository_thenThrowNPE() throws RepositoryGeneratorException{
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
+
+        GraphEntity graphEntity = new GraphEntity.Builder()
+                .property("id", "int")
+                .packageName("io.test")
+                .modelDirectory("")
+                .idName("id")
+                .className("Person")
+                .build();
+        ClassName parent = ClassName.get(Mockito.anyString(), Mockito.anyString());
+
+        Object result = repositoryGenerator.generateRepository(graphEntity, parent);
+
+        assertNotNull(result);
+        assertTrue(result instanceof TypeSpec);
     }
 
     @Test
-    public void givenGraphEntityWithNoIdName_whenGeneratingRepositories_thenReturnClassWrapper(){
+    // Repository generator does not make use of id name, so this should pass
+    public void givenGraphEntityWithNoIdName_whenCallingGenerateRepository_thenReturnTypeSpec() throws RepositoryGeneratorException{
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
+
         GraphEntity graphEntity = new GraphEntity.Builder()
-                .className("TestClass")
+                .property("id", "int")
+                .packageName("io.test")
+                .modelDirectory("")
                 .idType("int")
-                .modelDirectory("src/test/java")
-                .packageName("io.toro")
-                .property("Test", "TestType")
+                .className("Person")
                 .build();
+        ClassName parent = ClassName.get(Mockito.anyString(), Mockito.anyString());
 
-        PoetService codeGen = new PoetFactory().getPoetService();
-        RepositoryGenerator repositoryGenerator = new RepositoryGeneratorImpl(
-                codeGen, "Repository", "PUBLIC"
-        );
-        ClassNameWrapper crud = new ClassNameWrapper(
-                "org.springframework.data.repository", "CrudRepository"
-        );
-        assertNotNull(repositoryGenerator.generateRepository(graphEntity, crud));
+        Object result = repositoryGenerator.generateRepository(graphEntity, parent);
+
+        assertNotNull(result);
+        assertTrue(result instanceof TypeSpec);
     }
 
-    @Test(expected = NullPointerException.class)
-    // GraphModelProcessor should do validation
-    public void givenGraphEntityWithNoIdType_whenGeneratingRepositories_thenThrowNullPointerException(){
-        GraphEntity graphEntity = new GraphEntity.Builder()
-                .className("TestClass")
-                .idName("id")
-                .modelDirectory("src/test/java")
-                .packageName("io.toro")
-                .property("Test", "TestType")
-                .build();
+    @Test(expected = IllegalArgumentException.class)
+    // poet forbids a class with a name of null
+    public void givenGraphEntityWithNoClassName_whenCallingGenerateRepository_thenThrowNPE() throws RepositoryGeneratorException{
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl(Mockito.anyString(), Modifier.PUBLIC);
 
-        PoetService codeGen = new PoetFactory().getPoetService();
-        RepositoryGenerator repositoryGenerator = new RepositoryGeneratorImpl(
-                codeGen, "Repository", "PUBLIC"
-        );
-        ClassNameWrapper crud = new ClassNameWrapper(
-                "org.springframework.data.repository", "CrudRepository"
-        );
-        // should fail and throw NPE
-        assertNotNull(repositoryGenerator.generateRepository(graphEntity, crud));
-    }
-
-    @Test
-    public void givenGraphEntityWithNoClassName_whenGeneratingRepositories_thenReturnClassWrapper(){
         GraphEntity graphEntity = new GraphEntity.Builder()
-                .idName("id")
+                .property("id", "int")
+                .packageName("io.test")
+                .modelDirectory("")
                 .idType("int")
-                .modelDirectory("src/test/java")
-                .packageName("io.toro")
-                .property("Test", "TestType")
-                .build();
-
-        PoetService codeGen = new PoetFactory().getPoetService();
-        RepositoryGenerator repositoryGenerator = new RepositoryGeneratorImpl(
-                codeGen, "Repository", "PUBLIC"
-        );
-        ClassNameWrapper crud = new ClassNameWrapper(
-                "org.springframework.data.repository", "CrudRepository"
-        );
-        assertNotNull(repositoryGenerator.generateRepository(graphEntity, crud));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void givenGraphEntityWithNoPackageName_whenGeneratingRepositories_thenThrowNullPointerException(){
-        GraphEntity graphEntity = new GraphEntity.Builder()
                 .idName("id")
-                .idType("int")
-                .modelDirectory("src/test/java")
-                .className("TestClass")
-                .property("Test", "TestType")
                 .build();
+        ClassName parent = ClassName.get(Mockito.anyString(), Mockito.anyString());
 
-        PoetService codeGen = new PoetFactory().getPoetService();
-        RepositoryGenerator repositoryGenerator = new RepositoryGeneratorImpl(
-                codeGen, "Repository", "PUBLIC"
-        );
-        ClassNameWrapper crud = new ClassNameWrapper(
-                "org.springframework.data.repository", "CrudRepository"
-        );
-        assertNotNull(repositoryGenerator.generateRepository(graphEntity, crud));
-    }
+        Object result = repositoryGenerator.generateRepository(graphEntity, parent);
 
-    @Test(expected = NullPointerException.class)
-    public void givenEmptyGraphEntity_whenGeneratingRepositories_thenThrowNullPointerException(){
-        GraphEntity graphEntity = new GraphEntity.Builder()
-                .build();
-
-        PoetService codeGen = new PoetFactory().getPoetService();
-        RepositoryGenerator repositoryGenerator = new RepositoryGeneratorImpl(
-                codeGen, "Repository", "PUBLIC"
-        );
-        ClassNameWrapper crud = new ClassNameWrapper(
-                "org.springframework.data.repository", "CrudRepository"
-        );
-        assertNotNull(repositoryGenerator.generateRepository(graphEntity, crud));
+        assertNotNull(result);
+        assertTrue(result instanceof TypeSpec);
     }
 }
