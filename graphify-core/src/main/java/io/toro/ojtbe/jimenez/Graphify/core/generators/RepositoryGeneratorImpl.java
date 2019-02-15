@@ -18,6 +18,7 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
         this.defaultAccess = defaultAccess;
     }
 
+    @Override
     public TypeSpec generateRepository(GraphEntity graphEntity,
                                         ClassName parent) throws RepositoryGeneratorException{
 
