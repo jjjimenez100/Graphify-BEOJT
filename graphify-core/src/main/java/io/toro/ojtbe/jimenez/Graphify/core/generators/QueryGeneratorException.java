@@ -1,4 +1,4 @@
-package io.toro.ojtbe.jimenez.Graphify.core.generators.resolver;
+package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
 public final class QueryGeneratorException extends RuntimeException {
     public QueryGeneratorException() {
