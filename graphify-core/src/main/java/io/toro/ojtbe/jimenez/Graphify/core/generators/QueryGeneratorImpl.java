@@ -9,13 +9,14 @@ import javax.lang.model.element.Modifier;
 import java.util.List;
 
 final class QueryGeneratorImpl implements QueryGenerator{
-    private final String defaultName;
-    private final ClassName resolverInterface;
+    private String name;
+    private Modifier access;
+    private ClassName parent;
 
-    QueryGeneratorImpl(String defaultName,
-                       ClassName resolverInterface){
-        this.defaultName = defaultName;
-        this.resolverInterface = resolverInterface;
+    QueryGeneratorImpl(){
+        this.name = "QueryResolver";
+        this.access = Modifier.PUBLIC;
+        this.parent =
     }
 
     public TypeSpec generateQuery(List<GraphEntity> graphEntities,
