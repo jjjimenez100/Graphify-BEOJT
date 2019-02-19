@@ -5,6 +5,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
+import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNameUtil;
 import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNames;
 
 import javax.lang.model.element.Modifier;
@@ -24,9 +25,10 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
     }
 
     @Override
-    public boolean generate(GraphEntity graphEntity,
-                            String path,
-                            String packageName) {
+    public void generate(GraphEntity graphEntity,
+                         String path,
+                         String packageName)
+    throws RepositoryGeneratorException {
         TypeSpec repository = createRepositoryInterface(
                 graphEntity, parent
         );
@@ -38,25 +40,12 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
                 .build();
         try {
             file.writeTo(Paths.get(path));
-            return true;
+
         } catch (IOException e) {
             e.printStackTrace();
+
             throw new RepositoryGeneratorException();
-            return false;
         }
-        boolean writeSuccess = PoetUtil.INSTANCE
-                .write(
-                        graphEntity.getPackageName(),
-                        graphEntity.getModelDirectory(),
-                        repository
-                );
-
-        if(!writeSuccess){
-            throw new RepositoryGeneratorException("Failed to generate" +
-                    " repository file for: " + graphEntity);
-        }
-
-        return repository;
     }
 
     @Override
@@ -76,29 +65,21 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
         this.access = Modifier.valueOf(access);
     }
 
-    @Override
-    public TypeSpec generateRepository(GraphEntity graphEntity,
-                                        ClassName parent) throws RepositoryGeneratorException{
-
-
-    }
-
-
     private TypeSpec createRepositoryInterface(GraphEntity graphEntity,
-                                                ClassName parent){
+                                               ClassName parent){
         String entityName = graphEntity.getClassName();
         String idType = graphEntity.getIdType();
         String packageName = graphEntity.getPackageName();
-        String repositoryName = entityName + defaultSuffix;
+        String repositoryName = entityName + name;
 
         ClassName model = ClassName.get(packageName, entityName);
-        ClassName id = PoetUtil.INSTANCE
+        ClassName id = ClassNameUtil.INSTANCE
                 .toBoxedType(
                         ClassName.get("", idType)
                 );
 
         return TypeSpec.interfaceBuilder(repositoryName)
-                .addModifiers(defaultAccess)
+                .addModifiers(access)
                 .addSuperinterface(
                         ParameterizedTypeName.get(
                                 parent, model, id
