@@ -2,7 +2,17 @@ package io.toro.ojtbe.jimenez.Graphify.core.poet;
 
 import com.squareup.javapoet.ClassName;
 
-public enum Annotation {
+public enum ClassNames {
+    JPA_REPOSITORY(
+            "org.springframework.data.jpa.repository",
+            "JpaRepository"
+    ),
+
+    CRUD_REPOSITORY(
+        "org.springframework.data.repository",
+        "CrudRepository"
+    ),
+
     TRANSACTION(
             "javax.transaction",
             "Transactional"
@@ -25,8 +35,8 @@ public enum Annotation {
 
     private final ClassName annotation;
 
-    Annotation(String packageStatement,
-                       String className){
+    ClassNames(String packageStatement,
+               String className){
         this.annotation = ClassName.get(
                 packageStatement, className
         );
