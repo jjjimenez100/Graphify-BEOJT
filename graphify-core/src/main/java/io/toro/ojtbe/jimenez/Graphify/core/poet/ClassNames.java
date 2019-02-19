@@ -13,6 +13,11 @@ public enum ClassNames {
         "CrudRepository"
     ),
 
+    GRAPHQL_QUERY_RESOLVER(
+            "com.coxautodev.graphql.tools",
+            "GraphQLQueryResolver"
+    ),
+
     TRANSACTION(
             "javax.transaction",
             "Transactional"
