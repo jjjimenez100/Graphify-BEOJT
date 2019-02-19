@@ -5,6 +5,6 @@ import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
 import java.util.List;
 
 public interface GraphQlGenerator {
-    boolean generate(List<GraphEntity> graphEntities)
+    void generate(List<GraphEntity> graphEntities)
             throws GraphQlGeneratorException;
 }

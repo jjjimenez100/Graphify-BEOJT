@@ -5,7 +5,7 @@ import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
 import java.util.List;
 
 interface QueryGenerator extends Generator {
-    boolean generate(List<GraphEntity> graphEntities,
+    void generate(List<GraphEntity> graphEntities,
                      String serviceClass,
                      String servicePackage)
             throws QueryGeneratorException;
