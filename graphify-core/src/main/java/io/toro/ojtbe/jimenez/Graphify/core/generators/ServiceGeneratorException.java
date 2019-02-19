@@ -1,6 +1,6 @@
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
-public class ServiceGeneratorException extends Exception{
+public final class ServiceGeneratorException extends Exception{
     public ServiceGeneratorException() {
         super();
     }

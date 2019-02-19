@@ -1,6 +1,6 @@
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
-public class RepositoryGeneratorException extends Exception{
+public final class RepositoryGeneratorException extends Exception{
     public RepositoryGeneratorException() {
         super();
     }
