@@ -5,4 +5,6 @@ interface Generator {
 
     void setParent(String className,
                    String packageName);
+
+    void setAccess(String access);
 }
