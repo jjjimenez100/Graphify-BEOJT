@@ -1,21 +1,17 @@
 package io.toro.ojtbe.jimenez.Graphify.core.poet;
 
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
 
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public enum PoetUtil {
+public enum ClassNameUtil {
     INSTANCE;
 
     public final List<TypeName> primitives;
 
-    private PoetUtil(){
+    ClassNameUtil(){
         primitives = new ArrayList<>();
         initPrimitives();
     }
@@ -39,23 +35,5 @@ public enum PoetUtil {
             }
         }
         return name;
-    }
-
-    public boolean write(String packageStatement,
-                         String path,
-                         TypeSpec typeSpec){
-        JavaFile file = JavaFile
-                .builder(packageStatement, typeSpec)
-                .skipJavaLangImports(true)
-                .indent("   ")
-                .build();
-        try {
-            file.writeTo(Paths.get(path));
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-
-            return false;
-        }
     }
 }

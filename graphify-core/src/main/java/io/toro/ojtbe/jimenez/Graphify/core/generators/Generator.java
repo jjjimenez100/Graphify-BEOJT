@@ -1,7 +1,8 @@
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
-import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
+interface Generator {
+    void setName(String name);
 
-public interface Generator {
-    boolean generate(GraphEntity... graphEntities);
+    void setParent(String className,
+                   String packageName);
 }
