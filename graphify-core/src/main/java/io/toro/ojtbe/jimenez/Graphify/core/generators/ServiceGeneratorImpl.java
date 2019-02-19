@@ -3,60 +3,83 @@ package io.toro.ojtbe.jimenez.Graphify.core.generators;
 import com.squareup.javapoet.*;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
 import io.toro.ojtbe.jimenez.Graphify.core.Annotation;
-import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetUtil;
+import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNameUtil;
 
 import javax.lang.model.element.Modifier;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 final class ServiceGeneratorImpl implements ServiceGenerator{
-    private final String defaultSuffix;
-    private final Modifier[] modifiers;
+    private String name;
+    private Modifier access;
+    private ClassName parent;
 
-    ServiceGeneratorImpl(String defaultSuffix,
-                                Modifier... modifiers){
-        this.defaultSuffix = defaultSuffix;
-        this.modifiers = modifiers;
+    ServiceGeneratorImpl(){
+        this.name = "Service";
+        this.access = Modifier.PUBLIC;
+        this.parent = ClassName.get(
+            "io.toro.ojtbe.jimenez.Graphify.core.generators",
+                "ServiceImpl"
+        );
     }
 
     @Override
-    public TypeSpec generateService(GraphEntity graphEntity,
-                                    TypeSpec repository,
-                                    ClassName parent)
-            throws ServiceGeneratorException{
+    public void generate(GraphEntity graphEntity,
+                         String path,
+                         String packageName,
+                         String repositoryName) throws ServiceGeneratorException {
+
+        ClassName repository = ClassName.get(
+                packageName, repositoryName
+        );
+
         TypeSpec service = createServiceClass(
                 graphEntity, repository, parent
         );
 
-        boolean writeSuccess = PoetUtil.INSTANCE
-                .write(
-                        graphEntity.getPackageName(),
-                        graphEntity.getModelDirectory(),
-                        service
-                );
+        JavaFile file = JavaFile
+                .builder(packageName, service)
+                .skipJavaLangImports(true)
+                .indent("   ")
+                .build();
+        try {
+            file.writeTo(Paths.get(path));
 
-        if(!writeSuccess){
-            throw new ServiceGeneratorException("Failed to generate" +
-                    " service file for: " + repository);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            throw new ServiceGeneratorException();
         }
+    }
 
-        return service;
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setParent(String className, String packageName) {
+        this.parent = ClassName.get(
+                className, packageName
+        );
+    }
+
+    @Override
+    public void setAccess(String access) {
+        this.access = Modifier.valueOf(access);
     }
 
     private TypeSpec createServiceClass(GraphEntity graphEntity,
-                                        TypeSpec repository,
+                                        ClassName repository,
                                         ClassName parent){
-        String serviceName = graphEntity.getClassName() + defaultSuffix;
+        String serviceName = graphEntity.getClassName() + name;
 
         ClassName entityClass = ClassName.get(
                 graphEntity.getPackageName(),
                 graphEntity.getClassName()
         );
 
-        ClassName repositoryClass = ClassName.get(
-                graphEntity.getPackageName(),
-                repository.name
-        );
-
-        ClassName idClass = PoetUtil.INSTANCE
+        ClassName idClass = ClassNameUtil.INSTANCE
                 .toBoxedType(
                         ClassName.get(
                                 "",
@@ -74,17 +97,15 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
                 )
                 .addMethod(
                         createConstructor(
-                                repository,
-                                repositoryClass
+                                repository
                         )
                 )
-                .addModifiers(modifiers)
+                .addModifiers(access)
                 .build();
     }
 
-    private MethodSpec createConstructor(TypeSpec repository,
-                                         ClassName repositoryClass) {
-        String repositoryType = repository.name;
+    private MethodSpec createConstructor(ClassName repository) {
+        String repositoryType = repository.simpleName();
         String repositoryName = Character.toLowerCase(
                 repositoryType.charAt(0)) +
                 repositoryType.substring(1);
@@ -94,7 +115,7 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(
                         createConstructorParameter(
-                                repositoryName, repositoryClass
+                                repositoryName, repository
                         )
                 )
                 .addCode(
@@ -107,8 +128,8 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
     }
 
     private ParameterSpec createConstructorParameter(String repositoryName,
-                                                     ClassName repositoryClass) {
-        return ParameterSpec.builder(repositoryClass, repositoryName)
+                                                     ClassName repository) {
+        return ParameterSpec.builder(repository, repositoryName)
                 .build();
     }
 

@@ -2,9 +2,9 @@ package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
 
-interface ServiceGenerator extends Generator {
+interface RepositoryGenerator extends Generator {
     void generate(GraphEntity graphEntity,
                      String path,
                      String packageName)
-            throws ServiceGeneratorException;
+            throws RepositoryGeneratorException;
 }
