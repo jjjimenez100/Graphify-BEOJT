@@ -3,10 +3,13 @@ package io.toro.ojtbe.jimenez.Graphify.core.generators;
 import com.squareup.javapoet.*;
 import io.toro.ojtbe.jimenez.Graphify.core.Annotation;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
-import io.toro.ojtbe.jimenez.Graphify.core.poet.PoetUtil;
+import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNames;
 
 import javax.lang.model.element.Modifier;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 final class QueryGeneratorImpl implements QueryGenerator{
     private String name;
@@ -16,64 +19,71 @@ final class QueryGeneratorImpl implements QueryGenerator{
     QueryGeneratorImpl(){
         this.name = "QueryResolver";
         this.access = Modifier.PUBLIC;
-        this.parent =
+        this.parent = ClassNames.GRAPHQL_QUERY_RESOLVER
+                .getClassName();
     }
 
-    public TypeSpec generateQuery(List<GraphEntity> graphEntities,
-                                  List<TypeSpec> services){
-        if(!validateMappings(graphEntities.size(), services.size())){
-            throw new QueryGeneratorException("Invalid graph entity to" +
-                    "service mappings");
-        }
-
+    @Override
+    public void generate(List<GraphEntity> graphEntities,
+                         Map<String, String> services,
+                         String packageName,
+                         String path) throws QueryGeneratorException {
         TypeSpec resolver = createQueryClass(graphEntities, services);
 
-        boolean writeSuccess = PoetUtil.INSTANCE
-                .write(
-                        graphEntities.get(0).getPackageName(),
-                        graphEntities.get(0).getModelDirectory(),
-                        resolver
-                );
+        JavaFile file = JavaFile
+                .builder(packageName, resolver)
+                .skipJavaLangImports(true)
+                .indent("   ")
+                .build();
 
-        if(!writeSuccess){
-            throw new QueryGeneratorException("Failed to generate resolver" +
-                    " file for: " + graphEntities.get(0));
+        try {
+            file.writeTo(Paths.get(path));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            throw new QueryGeneratorException();
         }
-
-        return resolver;
     }
 
-    private boolean validateMappings(int entitiesSize,
-                                     int servicesSize){
-        if(entitiesSize == 0 || servicesSize == 0){
-            return false;
-        } else if(entitiesSize != servicesSize){
-            return false;
-        } else {
-            return true;
-        }
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setParent(String className, String packageName) {
+        this.parent = ClassName.get(
+                className, packageName
+        );
+    }
+
+    @Override
+    public void setAccess(String access) {
+        this.access = Modifier.valueOf(access);
     }
 
     private TypeSpec createQueryClass(List<GraphEntity> graphEntities,
-                                         List<TypeSpec> services){
-        TypeSpec.Builder queryClassBuilder = TypeSpec.classBuilder(defaultName)
+                                      Map<String, String> services){
+        TypeSpec.Builder queryClassBuilder = TypeSpec.classBuilder(name)
                 .addAnnotation(Annotation.COMPONENT.getAnnotation())
-                .addSuperinterface(resolverInterface)
+                .addSuperinterface(parent)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
         MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC);
 
-        int max = graphEntities.size();
+        int index = 0;
 
-        for(int index=0; index<max; index++){
-            TypeSpec service = services.get(index);
-            String serviceType = service.name;
+        for(String servicePackage: services.keySet()){
+            ClassName service = ClassName.get(
+                    servicePackage, services.get(servicePackage)
+            );
+
+            String serviceType = service.simpleName();
             String serviceName = Character
                     .toLowerCase(serviceType.charAt(0)) +
                     serviceType.substring(1);
-            String servicePackage = graphEntities.get(index)
-                    .getPackageName();
 
             ClassName serviceClass = ClassName.get(
                     servicePackage,
@@ -115,6 +125,8 @@ final class QueryGeneratorImpl implements QueryGenerator{
                             ClassName.get("", graphEntity.getIdType())
                     )
             );
+
+            index++;
         }
 
         queryClassBuilder.addMethod(constructorBuilder.build());

@@ -13,6 +13,11 @@ public enum ClassNames {
         "CrudRepository"
     ),
 
+    GRAPHQL_QUERY_RESOLVER(
+            "com.coxautodev.graphql.tools",
+            "GraphQLQueryResolver"
+    ),
+
     TRANSACTION(
             "javax.transaction",
             "Transactional"
@@ -33,16 +38,16 @@ public enum ClassNames {
             "Component"
     );
 
-    private final ClassName annotation;
+    private final ClassName className;
 
     ClassNames(String packageStatement,
                String className){
-        this.annotation = ClassName.get(
+        this.className = ClassName.get(
                 packageStatement, className
         );
     }
 
-    public ClassName getAnnotation(){
-        return annotation;
+    public ClassName getClassName(){
+        return className;
     }
 }
