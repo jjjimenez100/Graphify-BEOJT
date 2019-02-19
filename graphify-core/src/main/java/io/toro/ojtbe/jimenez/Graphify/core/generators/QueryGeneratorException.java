@@ -1,6 +1,6 @@
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
-public final class QueryGeneratorException extends Exception {
+final class QueryGeneratorException extends Exception {
     public QueryGeneratorException() {
         super();
     }
