@@ -14,10 +14,10 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 final class ServiceGeneratorImpl implements ServiceGenerator{
-    private String name;
-    private Modifier access;
-    private ClassName parent;
-    private String repositoryName;
+    private final String name;
+    private final Modifier access;
+    private final ClassName parent;
+    private final String repositoryName;
 
     ServiceGeneratorImpl(){
         this.name = "Service";
@@ -84,7 +84,9 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
         } catch (IOException e) {
             e.printStackTrace();
 
-            throw new ServiceGeneratorException();
+            throw new ServiceGeneratorException(
+                    "Failed to generate service, at: " +
+                            graphEntity);
         }
     }
 
