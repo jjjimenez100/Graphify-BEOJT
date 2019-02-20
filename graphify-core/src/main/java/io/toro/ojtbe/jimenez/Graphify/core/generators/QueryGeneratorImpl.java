@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 final class QueryGeneratorImpl implements QueryGenerator{
-    private String name;
-    private Modifier access;
-    private ClassName parent;
-    private String serviceName;
+    private final String name;
+    private final Modifier access;
+    private final ClassName parent;
+    private final String serviceName;
 
     QueryGeneratorImpl(){
         this.name = "QueryResolver";
@@ -74,7 +74,8 @@ final class QueryGeneratorImpl implements QueryGenerator{
         } catch (IOException e) {
             e.printStackTrace();
 
-            throw new QueryGeneratorException();
+            throw new QueryGeneratorException(
+                    "Failed to generate query resolver ");
         }
     }
 
