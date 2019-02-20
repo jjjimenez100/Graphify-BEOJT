@@ -26,6 +26,16 @@ final class QueryGeneratorImpl implements QueryGenerator{
         this.serviceName = "Service";
     }
 
+    QueryGeneratorImpl(String name,
+                       Modifier access,
+                       ClassName parent,
+                       String serviceName){
+        this.name = name;
+        this.access = access;
+        this.parent = parent;
+        this.serviceName = serviceName;
+    }
+
     @Override
     public List<GraphEntity> process(List<GraphEntity> input) {
         try{
@@ -201,42 +211,5 @@ final class QueryGeneratorImpl implements QueryGenerator{
                 .addCode(getIndividual)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .build();
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getParentClass() {
-        return parent.simpleName();
-    }
-
-    @Override
-    public String getParentPackage() {
-        return parent.packageName();
-    }
-
-    @Override
-    public void setServiceName(String name) {
-        this.serviceName = name;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public void setParent(String className, String packageName) {
-        this.parent = ClassName.get(
-                className, packageName
-        );
-    }
-
-    @Override
-    public void setAccess(String access) {
-        this.access = Modifier.valueOf(access);
     }
 }
