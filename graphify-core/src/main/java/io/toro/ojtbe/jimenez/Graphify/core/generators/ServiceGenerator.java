@@ -8,6 +8,4 @@ import java.util.List;
 interface ServiceGenerator extends Handler<List<GraphEntity>> {
     void generate(GraphEntity graphEntity)
             throws ServiceGeneratorException;
-
-    void setRepositoryName(String name);
 }
