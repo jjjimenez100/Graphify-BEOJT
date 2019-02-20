@@ -11,6 +11,8 @@ import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNames;
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
 
 final class RepositoryGeneratorImpl implements RepositoryGenerator {
     private String name;
@@ -21,48 +23,51 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
         this.name = "Repository";
         this.access = Modifier.PUBLIC;
         this.parent = ClassNames.CRUD_REPOSITORY
-                .getAnnotation();
+                .getClassName();
     }
 
     @Override
-    public void generate(GraphEntity graphEntity,
-                         String path,
-                         String packageName)
+    public List<GraphEntity> process(List<GraphEntity> input) {
+        try{
+            for(GraphEntity graphEntity: input){
+                generate(graphEntity);
+            }
+        } catch(RepositoryGeneratorException e){
+            e.printStackTrace();
+
+            return Collections.emptyList();
+        }
+
+        return input;
+    }
+
+    @Override
+    public void generate(GraphEntity graphEntity)
     throws RepositoryGeneratorException {
         TypeSpec repository = createRepositoryInterface(
                 graphEntity, parent
         );
 
+        // write repository to the same path and package
+        // as the annotated entity model
         JavaFile file = JavaFile
-                .builder(packageName, repository)
+                .builder(
+                        graphEntity.getPackageName(),
+                        repository
+                )
                 .skipJavaLangImports(true)
                 .indent("   ")
                 .build();
         try {
-            file.writeTo(Paths.get(path));
+            file.writeTo(Paths.get(
+                    graphEntity.getModelDirectory()
+            ));
 
         } catch (IOException e) {
             e.printStackTrace();
 
             throw new RepositoryGeneratorException();
         }
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public void setParent(String className, String packageName) {
-        this.parent = ClassName.get(
-                className, packageName
-        );
-    }
-
-    @Override
-    public void setAccess(String access) {
-        this.access = Modifier.valueOf(access);
     }
 
     private TypeSpec createRepositoryInterface(GraphEntity graphEntity,
@@ -86,5 +91,37 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
                         )
                 )
                 .build();
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setParent(String className, String packageName) {
+        this.parent = ClassName.get(
+                className, packageName
+        );
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getParentClass() {
+        return parent.simpleName();
+    }
+
+    @Override
+    public String getParentPackage() {
+        return parent.packageName();
+    }
+
+    @Override
+    public void setAccess(String access) {
+        this.access = Modifier.valueOf(access);
     }
 }
