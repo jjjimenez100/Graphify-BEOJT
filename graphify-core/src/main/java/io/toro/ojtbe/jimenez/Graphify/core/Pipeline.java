@@ -1,4 +1,4 @@
-package io.toro.ojtbe.jimenez.Graphify.core.generators;
+package io.toro.ojtbe.jimenez.Graphify.core;
 
 import java.util.ArrayList;
 import java.util.List;
