@@ -8,29 +8,50 @@ import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNameUtil;
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 final class ServiceGeneratorImpl implements ServiceGenerator{
     private String name;
     private Modifier access;
     private ClassName parent;
+    private String repositoryName;
 
     ServiceGeneratorImpl(){
         this.name = "Service";
-        this.access = Modifier.PUBLIC;
         this.parent = ClassName.get(
-            "io.toro.ojtbe.jimenez.Graphify.core.generators",
+                "io.toro.ojtbe.jimenez.Graphify.core.generators",
                 "ServiceImpl"
         );
+        this.repositoryName = "Repository";
+        this.access = Modifier.PUBLIC;
     }
 
     @Override
-    public void generate(GraphEntity graphEntity,
-                         String path,
-                         String packageName,
-                         String repositoryName) throws ServiceGeneratorException {
+    public List<GraphEntity> process(List<GraphEntity> input) {
+        try{
+            for(GraphEntity graphEntity : input){
+                generate(graphEntity);
+            }
+
+        } catch(ServiceGeneratorException e){
+            e.printStackTrace();
+
+            return Collections.emptyList();
+        }
+
+        return input;
+    }
+
+    @Override
+    public void generate(GraphEntity graphEntity)
+            throws ServiceGeneratorException {
 
         ClassName repository = ClassName.get(
-                packageName, repositoryName
+                graphEntity.getPackageName(),
+                repositoryName
         );
 
         TypeSpec service = createServiceClass(
@@ -38,12 +59,17 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
         );
 
         JavaFile file = JavaFile
-                .builder(packageName, service)
+                .builder(
+                        graphEntity.getPackageName(),
+                        service
+                )
                 .skipJavaLangImports(true)
                 .indent("   ")
                 .build();
         try {
-            file.writeTo(Paths.get(path));
+            file.writeTo(Paths.get(
+                    graphEntity.getModelDirectory()
+            ));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -67,6 +93,26 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
     @Override
     public void setAccess(String access) {
         this.access = Modifier.valueOf(access);
+    }
+
+    @Override
+    public void setRepositoryName(String name) {
+        this.repositoryName = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getParentClass() {
+        return parent.simpleName();
+    }
+
+    @Override
+    public String getParentPackage() {
+        return parent.packageName();
     }
 
     private TypeSpec createServiceClass(GraphEntity graphEntity,
