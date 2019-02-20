@@ -7,4 +7,6 @@ import java.util.List;
 interface QueryGenerator extends Generator {
     void generate(List<GraphEntity> graphEntities)
             throws QueryGeneratorException;
+
+    void setServiceName(String name);
 }

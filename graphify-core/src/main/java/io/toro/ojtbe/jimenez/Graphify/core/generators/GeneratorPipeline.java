@@ -8,5 +8,6 @@ import java.util.List;
 public class GeneratorPipeline extends Pipeline<List<GraphEntity>> {
     public GeneratorPipeline(){
         super();
+        // add generators here
     }
 }

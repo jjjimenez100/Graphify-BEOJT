@@ -3,7 +3,7 @@ package io.toro.ojtbe.jimenez.Graphify.core;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pipeline<T> {
+public abstract class Pipeline<T> {
 
     private final List<Handler<T>> handlers;
 
