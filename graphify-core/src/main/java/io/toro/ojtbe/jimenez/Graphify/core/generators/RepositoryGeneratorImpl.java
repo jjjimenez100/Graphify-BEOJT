@@ -15,9 +15,9 @@ import java.util.Collections;
 import java.util.List;
 
 final class RepositoryGeneratorImpl implements RepositoryGenerator {
-    private String name;
-    private Modifier access;
-    private ClassName parent;
+    private final String name;
+    private final Modifier access;
+    private final ClassName parent;
 
     RepositoryGeneratorImpl(){
         this.name = "Repository";
@@ -74,7 +74,10 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
         } catch (IOException e) {
             e.printStackTrace();
 
-            throw new RepositoryGeneratorException();
+            throw new RepositoryGeneratorException(
+                    "Failed to generate repositories, at "
+                    + graphEntity
+            );
         }
     }
 
