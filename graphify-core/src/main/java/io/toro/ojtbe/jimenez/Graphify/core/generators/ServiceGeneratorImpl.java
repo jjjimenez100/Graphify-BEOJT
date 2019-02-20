@@ -29,6 +29,16 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
         this.access = Modifier.PUBLIC;
     }
 
+    ServiceGeneratorImpl(String name,
+                         Modifier access,
+                         ClassName parent,
+                         String repositoryName){
+        this.name = name;
+        this.access = access;
+        this.parent = parent;
+        this.repositoryName = repositoryName;
+    }
+
     @Override
     public List<GraphEntity> process(List<GraphEntity> input) {
         try{
@@ -76,43 +86,6 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
 
             throw new ServiceGeneratorException();
         }
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public void setParent(String className, String packageName) {
-        this.parent = ClassName.get(
-                className, packageName
-        );
-    }
-
-    @Override
-    public void setAccess(String access) {
-        this.access = Modifier.valueOf(access);
-    }
-
-    @Override
-    public void setRepositoryName(String name) {
-        this.repositoryName = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getParentClass() {
-        return parent.simpleName();
-    }
-
-    @Override
-    public String getParentPackage() {
-        return parent.packageName();
     }
 
     private TypeSpec createServiceClass(GraphEntity graphEntity,
