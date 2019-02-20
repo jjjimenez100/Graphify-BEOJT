@@ -26,6 +26,14 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
                 .getClassName();
     }
 
+    RepositoryGeneratorImpl(String name,
+                            Modifier access,
+                            ClassName parent){
+        this.name = name;
+        this.access = access;
+        this.parent = parent;
+    }
+
     @Override
     public List<GraphEntity> process(List<GraphEntity> input) {
         try{
@@ -91,37 +99,5 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
                         )
                 )
                 .build();
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public void setParent(String className, String packageName) {
-        this.parent = ClassName.get(
-                className, packageName
-        );
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getParentClass() {
-        return parent.simpleName();
-    }
-
-    @Override
-    public String getParentPackage() {
-        return parent.packageName();
-    }
-
-    @Override
-    public void setAccess(String access) {
-        this.access = Modifier.valueOf(access);
     }
 }
