@@ -26,7 +26,7 @@ public enum Annotation {
     private final ClassName annotation;
 
     private Annotation(String packageStatement,
-                       String className){
+               String className){
         this.annotation = ClassName.get(
                 packageStatement, className
         );
