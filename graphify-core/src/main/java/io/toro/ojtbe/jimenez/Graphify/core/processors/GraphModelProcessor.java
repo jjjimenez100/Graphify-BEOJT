@@ -46,8 +46,7 @@ public final class GraphModelProcessor extends AbstractProcessor {
                 debug(graphEntities);
 
                 if(containsSpecifiedId(graphEntities)){
-                    // Generate schema
-                    // TODO: Add generators here
+                    // generate files by sequence/step
                     new GeneratorPipeline().execute(graphEntities);
                 }
             }
@@ -55,6 +54,13 @@ public final class GraphModelProcessor extends AbstractProcessor {
         return true;
     }
 
+    /**
+     * Gets the annotated model's directory by using its
+     * simple name and package statement
+     * @param lookupName the simple name (class name)
+     * @param packageStatement package the model resides in
+     * @return a String path pointing to the model's directory
+     */
     private String getModelDirectory(String lookupName,
                                      String packageStatement){
 
@@ -67,7 +73,6 @@ public final class GraphModelProcessor extends AbstractProcessor {
                                 .endsWith(lookupName);
                     })
                     .collect(Collectors.toList());
-            System.out.println("CANDIDATES SIZE: " + candidates.size());
         } catch(IOException e){
             raiseError("IO Exception at: " + e.getMessage());
         }
@@ -80,10 +85,18 @@ public final class GraphModelProcessor extends AbstractProcessor {
         }
 
         raiseError("All candidates are not under package: " +
-                packageStatement);
+                packageStatement + " or you might not be using " +
+                "the filesystem to store your classes");
         return "";
     }
 
+    /**
+     * Check the package statement and match it to
+     * the given package statement
+     * @param packageStatement package statement to match
+     * @param path the absolute path of the candidate
+     * @return true if a given path matches the package statement
+     */
     private boolean isMatch(String packageStatement,
                             String path){
         File candidate = new File(path);
@@ -128,7 +141,7 @@ public final class GraphModelProcessor extends AbstractProcessor {
      * @return true if annotation was placed on a non-private complete class, else false
      */
     private boolean isValidModelClass(Element annotatedClass){
-        // Annotated element should be a complete, model class. No abstract/interfaces
+        // Annotated element should be a complete, model class. No abstract/interfaces/enums
         ElementKind elementKind = annotatedClass.getKind();
         Set<Modifier> modifiers = annotatedClass.getModifiers();
         if(elementKind == ElementKind.INTERFACE){
@@ -163,8 +176,10 @@ public final class GraphModelProcessor extends AbstractProcessor {
             String entityName = graphEntity.getClassName();
 
             if(!graphEntity.getProperties().containsKey(idName)){
-                raiseError(String.format("Invalid ID value given with the annotation at class %s." +
-                        " Possibly \"%s\" was misspelled or property does not exist.", entityName, idName));
+                raiseError(String.format("Invalid ID value given " +
+                        "with the annotation at class %s." +
+                        " Possibly \"%s\" was misspelled or property " +
+                        "does not exist.", entityName, idName));
                 return false;
             }
         }
@@ -173,7 +188,8 @@ public final class GraphModelProcessor extends AbstractProcessor {
     }
 
     /**
-     * Main method that processes all places annotated with @GraphModel and saves the properties
+     * Main method that processes all places annotated with @GraphModel
+     * and saves the properties
      * into an instance of GraphEntity
      * @param roundEnvironment container metadata
      * @return list of graph entities, representing each place
@@ -201,7 +217,8 @@ public final class GraphModelProcessor extends AbstractProcessor {
                 .className(className)
                 .packageName(packageName)
                 .idName(idName)
-                .modelDirectory(getModelDirectory(className + ".java", packageName));
+                .modelDirectory(getModelDirectory(className +
+                        ".java", packageName));
         initGraphProperties(idName, annotatedEntity, entityBuilder);
 
         return entityBuilder.build();
@@ -227,14 +244,12 @@ public final class GraphModelProcessor extends AbstractProcessor {
                     entityBuilder.idType(
                             typeEquivalent.simpleName()
                     );
-                    System.out.println(typeEquivalent.simpleName());
                 }
 
                 entityBuilder.property(name, type);
             }
         }
     }
-
 
     private void debug(List<GraphEntity> graphEntities){
 
@@ -247,8 +262,10 @@ public final class GraphModelProcessor extends AbstractProcessor {
                     .getProperties();
 
             for(String propertyName: properties.keySet()){
-                System.out.println("propertyType: " + properties.get(propertyName));
-                System.out.println("propertyName: " + propertyName);
+                System.out.println("propertyType: " +
+                        properties.get(propertyName));
+                System.out.println("propertyName: " +
+                        propertyName);
                 System.out.println();
             }
         }
@@ -291,9 +308,9 @@ public final class GraphModelProcessor extends AbstractProcessor {
     }
 
     /**
-     * Prevents initGraphEntities from acquiring method properties.
+     * Checks if the property is a valid type, not a method
      * @param type the extracted type
-     * @return if type is not a method
+     * @return true if type is not a method, else false
      */
     private boolean isValidType(String type){
         return type.charAt(0) != '(' ;
