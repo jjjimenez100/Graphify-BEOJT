@@ -39,15 +39,17 @@ public final class GraphModelProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations,
                            RoundEnvironment roundEnvironment){
-        if(validateModelClasses(roundEnvironment)){
-            List<GraphEntity> graphEntities
-                    = initGraphEntities(roundEnvironment);
-            debug(graphEntities);
+        if(!roundEnvironment.processingOver()){
+            if(validateModelClasses(roundEnvironment)){
+                List<GraphEntity> graphEntities
+                        = initGraphEntities(roundEnvironment);
+                debug(graphEntities);
 
-            if(containsSpecifiedId(graphEntities)){
-                // Generate schema
-                // TODO: Add generators here
-                new GeneratorPipeline().execute(graphEntities);
+                if(containsSpecifiedId(graphEntities)){
+                    // Generate schema
+                    // TODO: Add generators here
+                    new GeneratorPipeline().execute(graphEntities);
+                }
             }
         }
         return true;
@@ -65,6 +67,7 @@ public final class GraphModelProcessor extends AbstractProcessor {
                                 .endsWith(lookupName);
                     })
                     .collect(Collectors.toList());
+            System.out.println("CANDIDATES SIZE: " + candidates.size());
         } catch(IOException e){
             raiseError("IO Exception at: " + e.getMessage());
         }
@@ -224,6 +227,7 @@ public final class GraphModelProcessor extends AbstractProcessor {
                     entityBuilder.idType(
                             typeEquivalent.simpleName()
                     );
+                    System.out.println(typeEquivalent.simpleName());
                 }
 
                 entityBuilder.property(name, type);

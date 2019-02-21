@@ -2,7 +2,6 @@ package io.toro.ojtbe.jimenez.Graphify.core.processors;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
-import io.toro.ojtbe.jimenez.Graphify.core.processors.GraphModelProcessor;
 import org.junit.Test;
 
 import javax.tools.JavaFileObject;
@@ -16,16 +15,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedClassWithValidConditions_whenAnnotationProcessing_thenProceedWithNoError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forSourceLines("ModelTest",
-                "package io.toro.ojtbe.jimenez.Graphify.core;",
-                "import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;",
-                "@GraphModel(idName = \"id\")",
-                "public class ModelTest {",
-                "private int id;",
-                "private String name;",
-                "public int getId() {",
-                "return id;",
-                "}}");
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseOne.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).succeeded();
@@ -35,16 +25,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedClassWithInvalidNameValue_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forSourceLines("ModelTest",
-                "package io.toro.ojtbe.jimenez.Graphify.core;",
-                "import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;",
-                "@GraphModel(idName = \"notMatchingName\")",
-                "public class ModelTest {",
-                "private int id;",
-                "private String name;",
-                "public int getId() {",
-                "return id;",
-                "}}");
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseTwo.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).failed();
@@ -55,16 +36,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedAbstractClass_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forSourceLines("ModelTest",
-                "package io.toro.ojtbe.jimenez.Graphify.core;",
-                "import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;",
-                "@GraphModel(idName = \"id\")",
-                "public abstract class ModelTest {",
-                "private int id;",
-                "private String name;",
-                "public int getId() {",
-                "return id;",
-                "}}");
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseThree.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).failed();
@@ -76,14 +48,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedInterface_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forSourceLines("ModelTest",
-                "package io.toro.ojtbe.jimenez.Graphify.core;",
-                "import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;",
-                "@GraphModel(idName = \"id\")",
-                "public interface ModelTest {",
-                "public int getId() {",
-                "return 1;",
-                "}}");
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseFour.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
 
@@ -96,12 +61,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedEnum_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forSourceLines("ModelTest",
-                "package io.toro.ojtbe.jimenez.Graphify.core;",
-                "import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;",
-                "@GraphModel(idName = \"id\")",
-                "public enum ModelTest {",
-                "THIS, IS, A, TEST, ENUM}");
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseFive.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
 
@@ -111,19 +71,10 @@ public class GraphModelProcessorTest {
     }
 
     @Test
-    public void givenAnnotatedPrivateClassWithValidConditions_whenAnnotationProcessing_thenProceedWithNoError(){
+    public void givenAnnotatedPrivateClassWithValidConditions_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forSourceLines("ModelTest",
-                "package io.toro.ojtbe.jimenez.Graphify.core;",
-                "import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;",
-                "@GraphModel(idName = \"id\")",
-                "private class ModelTest {",
-                "private int id;",
-                "private String name;",
-                "public int getId() {",
-                "return id;",
-                "}}");
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseSix.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).failed();
