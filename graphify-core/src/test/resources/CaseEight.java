@@ -1,9 +1,10 @@
 package io.toro.ojtbe.jimenez.Graphify.core;
 
 import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
-@GraphModel(idName = "NotMatchingName")
+import org.springframework.data.annotation.Id;
 
-public class CaseTwo {
+@GraphModel
+public class CaseEight {
     private int id;
     private String name;
 

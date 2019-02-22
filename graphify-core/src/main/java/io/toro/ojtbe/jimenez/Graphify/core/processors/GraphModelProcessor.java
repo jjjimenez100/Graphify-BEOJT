@@ -22,6 +22,7 @@ import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
 import io.toro.ojtbe.jimenez.Graphify.core.generators.GeneratorPipeline;
 import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNameUtil;
+import org.springframework.data.annotation.Id;
 
 @SupportedAnnotationTypes("io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -44,102 +45,28 @@ public final class GraphModelProcessor extends AbstractProcessor {
                 List<GraphEntity> graphEntities
                         = initGraphEntities(roundEnvironment);
                 debug(graphEntities);
-
-                if(containsSpecifiedId(graphEntities)){
-                    // generate files by sequence/step
-                    new GeneratorPipeline().execute(graphEntities);
-                }
+                new GeneratorPipeline().execute(graphEntities);
             }
+
         }
         return true;
     }
 
-    /**
-     * Gets the annotated model's directory by using its
-     * simple name and package statement
-     * @param lookupName the simple name (class name)
-     * @param packageStatement package the model resides in
-     * @return a String path pointing to the model's directory
-     */
-    private String getModelDirectory(String lookupName,
-                                     String packageStatement){
-
-        List<Path> candidates = Collections.emptyList();
-        try{
-            candidates = Files.walk(Paths.get(""))
-                    .filter(Files::isRegularFile)
-                    .filter((filePath) -> {
-                        return filePath.toString()
-                                .endsWith(lookupName);
-                    })
-                    .collect(Collectors.toList());
-        } catch(IOException e){
-            raiseError("IO Exception at: " + e.getMessage());
-        }
-
-        for(Path candidate: candidates){
-            if(isMatch(packageStatement,
-                    candidate.toAbsolutePath().toString())){
-                return candidate.getParent().toString();
-            }
-        }
-
-        raiseError("All candidates are not under package: " +
-                packageStatement + " or you might not be using " +
-                "the filesystem to store your classes");
-        return "";
-    }
-
-    /**
-     * Check the package statement and match it to
-     * the given package statement
-     * @param packageStatement package statement to match
-     * @param path the absolute path of the candidate
-     * @return true if a given path matches the package statement
-     */
-    private boolean isMatch(String packageStatement,
-                            String path){
-        File candidate = new File(path);
-
-        if(!packageStatement.isEmpty()){
-            try(Scanner reader = new Scanner(candidate)){
-                String declaredPackage = reader.nextLine();
-
-                while(declaredPackage.isEmpty()){
-                    declaredPackage = reader.nextLine();
-                }
-
-                return declaredPackage.contains(packageStatement);
-
-            } catch(FileNotFoundException e){
-                raiseError("File not found at: " + e.getMessage());
-
-                return false;
-            }
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * Checks the places of all given annotations for validity.
-     * @param roundEnvironment container metadata
-     * @return true if annotations were placed on a non-private complete class, else false
-     */
     private boolean validateModelClasses(RoundEnvironment roundEnvironment){
-        for(Element annotatedClass: roundEnvironment.getElementsAnnotatedWith(GraphModel.class)){
+        for(Element annotatedClass :
+                roundEnvironment.getElementsAnnotatedWith(GraphModel.class)){
             if(!isValidModelClass(annotatedClass)){
                 return false;
             }
+
+            if(!hasOnlyOneId(annotatedClass)){
+                return false;
+            }
         }
+
         return true;
     }
 
-    /**
-     * Validates a single placed annotation
-     * @param annotatedClass the annotated place
-     * @return true if annotation was placed on a non-private complete class, else false
-     */
     private boolean isValidModelClass(Element annotatedClass){
         // Annotated element should be a complete, model class. No abstract/interfaces/enums
         ElementKind elementKind = annotatedClass.getKind();
@@ -165,36 +92,29 @@ public final class GraphModelProcessor extends AbstractProcessor {
         }
     }
 
-    /**
-     * Checks if annotation idName value exists as a property of that class
-     * @param graphEntities list of annotated classes
-     * @return true if every annotated classes contains the specified idName, else false
-     */
-    private boolean containsSpecifiedId(List<GraphEntity> graphEntities){
-        for(GraphEntity graphEntity: graphEntities){
-            String idName = graphEntity.getIdName();
-            String entityName = graphEntity.getClassName();
+    private boolean hasOnlyOneId(Element annotatedEntity){
+        int idCount = 0;
 
-            if(!graphEntity.getProperties().containsKey(idName)){
-                raiseError(String.format("Invalid ID value given " +
-                        "with the annotation at class %s." +
-                        " Possibly \"%s\" was misspelled or property " +
-                        "does not exist.", entityName, idName));
-                return false;
+        for(Element property: annotatedEntity.getEnclosedElements()){
+            Id idProperty = property.getAnnotation(Id.class);
+            if(Objects.nonNull(idProperty)){
+                idCount += 1;
             }
+        }
+
+        if(idCount > 1){
+            raiseError("Multiple id candidates for: " +
+                    annotatedEntity.getSimpleName());
+            return false;
+
+        } else if(idCount == 0){
+            raiseError("No property annotated with @Id");
+            return false;
         }
 
         return true;
     }
 
-    /**
-     * Main method that processes all places annotated with @GraphModel
-     * and saves the properties
-     * into an instance of GraphEntity
-     * @param roundEnvironment container metadata
-     * @return list of graph entities, representing each place
-     * @see GraphEntity
-     */
     private List<GraphEntity> initGraphEntities(RoundEnvironment roundEnvironment){
         List<GraphEntity> graphEntities = new ArrayList<>();
 
@@ -222,6 +142,70 @@ public final class GraphModelProcessor extends AbstractProcessor {
         initGraphProperties(idName, annotatedEntity, entityBuilder);
 
         return entityBuilder.build();
+    }
+
+    private String getIdName(Element annotatedEntity){
+        String idName = "";
+
+        for(Element property: annotatedEntity.getEnclosedElements()){
+            Id idProperty = property.getAnnotation(Id.class);
+            idName = property.getSimpleName().toString();
+        }
+
+        return idName;
+    }
+
+    private String getModelDirectory(String lookupName,
+                                     String packageStatement){
+
+        List<Path> candidates = Collections.emptyList();
+        try{
+            candidates = Files.walk(Paths.get(""))
+                    .filter(Files::isRegularFile)
+                    .filter((filePath) -> {
+                        return filePath.toString()
+                                .endsWith(lookupName);
+                    })
+                    .collect(Collectors.toList());
+        } catch(IOException e){
+            raiseError("IO Exception at: " + e.getMessage());
+        }
+
+        for(Path candidate: candidates){
+            if(isPackageMatched(packageStatement,
+                    candidate.toAbsolutePath().toString())){
+                return candidate.getParent().toString();
+            }
+        }
+
+        raiseError("All candidates are not under package: " +
+                packageStatement + " or you might not be using " +
+                "the filesystem to store your classes");
+        return "";
+    }
+
+    private boolean isPackageMatched(String packageStatement,
+                                     String path){
+        File candidate = new File(path);
+
+        if(!packageStatement.isEmpty()){
+            try(Scanner reader = new Scanner(candidate)){
+                String declaredPackage = reader.nextLine();
+
+                while(declaredPackage.isEmpty()){
+                    declaredPackage = reader.nextLine();
+                }
+
+                return declaredPackage.contains(packageStatement);
+
+            } catch(FileNotFoundException e){
+                raiseError("File not found at: " + e.getMessage());
+
+                return false;
+            }
+        } else {
+            return true;
+        }
     }
 
     private void initGraphProperties(String idName,
@@ -299,12 +283,6 @@ public final class GraphModelProcessor extends AbstractProcessor {
 
     private String getPackageName(Element annotatedClass){
         return annotatedClass.getEnclosingElement().toString();
-    }
-
-    private String getIdName(Element annotatedClass){
-        GraphModel annotationValue = annotatedClass.getAnnotation(GraphModel.class);
-
-        return annotationValue.idName();
     }
 
     /**

@@ -1,9 +1,11 @@
 package io.toro.ojtbe.jimenez.Graphify.core;
 
 import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
-@GraphModel(idName = "id")
+import org.springframework.data.annotation.Id;
 
+@GraphModel
 public class CaseOne {
+    @Id
     private int id;
     private String name;
 

@@ -22,17 +22,6 @@ public class GraphModelProcessorTest {
     }
 
     @Test
-    public void givenAnnotatedClassWithInvalidNameValue_whenAnnotationProcessing_thenThrowError(){
-        GraphModelProcessor processor = new GraphModelProcessor();
-
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseTwo.java");
-
-        Compilation compilation = javac().withProcessors(processor).compile(modelTest);
-        assertThat(compilation).failed();
-        assertThat(compilation).hadErrorCount(1);
-    }
-
-    @Test
     public void givenAnnotatedAbstractClass_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
@@ -80,6 +69,30 @@ public class GraphModelProcessorTest {
         assertThat(compilation).failed();
         assertThat(compilation).hadErrorCount(1);
         assertThat(compilation).hadErrorContaining("modifier private not allowed here");
+    }
+
+    @Test
+    public void givenAnnotatedClassWithMultipleIdAnnotation_whenAnnotationProcessing_thenThrowError(){
+        GraphModelProcessor processor = new GraphModelProcessor();
+
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseSeven.java");
+
+        Compilation compilation = javac().withProcessors(processor).compile(modelTest);
+        assertThat(compilation).failed();
+        assertThat(compilation).hadErrorCount(1);
+        assertThat(compilation).hadErrorContaining("Multiple id candidates for: CaseSeven");
+    }
+
+    @Test
+    public void givenAnnotatedClassWithNoIdAnnotation_whenAnnotationProcessing_thenThrowError(){
+        GraphModelProcessor processor = new GraphModelProcessor();
+
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseEight.java");
+
+        Compilation compilation = javac().withProcessors(processor).compile(modelTest);
+        assertThat(compilation).failed();
+        assertThat(compilation).hadErrorCount(1);
+        assertThat(compilation).hadErrorContaining("No property annotated with @Id");
     }
 }
 
