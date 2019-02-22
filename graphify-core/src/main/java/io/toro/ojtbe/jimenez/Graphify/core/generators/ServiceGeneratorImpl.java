@@ -2,16 +2,14 @@ package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
 import com.squareup.javapoet.*;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
-import io.toro.ojtbe.jimenez.Graphify.core.Annotation;
 import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNameUtil;
+import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNames;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-
-import static java.util.Collections.emptyList;
 
 final class ServiceGeneratorImpl implements ServiceGenerator{
     private final String name;
@@ -109,8 +107,8 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
                 );
 
         return TypeSpec.classBuilder(serviceName)
-                .addAnnotation(Annotation.TRANSACTION.getAnnotation())
-                .addAnnotation(Annotation.SERVICE.getAnnotation())
+                .addAnnotation(ClassNames.TRANSACTION.getClassName())
+                .addAnnotation(ClassNames.SERVICE.getClassName())
                 .superclass(
                         ParameterizedTypeName.get(
                                 parent, entityClass, idClass
@@ -143,7 +141,7 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
                         createSuperInit(repositoryName)
                 )
                 .addAnnotation(
-                        Annotation.AUTOWIRED.getAnnotation()
+                        ClassNames.AUTOWIRED.getClassName()
                 )
                 .build();
     }
