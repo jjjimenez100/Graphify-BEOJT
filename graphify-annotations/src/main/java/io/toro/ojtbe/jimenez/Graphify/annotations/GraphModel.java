@@ -14,5 +14,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface GraphModel {
-    public String idName() default "id" ;
 }
