@@ -1,16 +1,27 @@
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
+import org.junit.After;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
 public class ServiceGeneratorTest {
+
+    @After
+    public void deleteGeneratedFiles() throws IOException{
+        Files.walk(Paths.get("src/test/java/io/query/"))
+                .filter(Files::isRegularFile)
+                .map(Path::toFile)
+                .forEach(File::delete);
+    }
 
     @Test
     public void givenPrimitiveKey_whenCallingGenerateService_thenGenerateService() throws ServiceGeneratorException, IOException {
