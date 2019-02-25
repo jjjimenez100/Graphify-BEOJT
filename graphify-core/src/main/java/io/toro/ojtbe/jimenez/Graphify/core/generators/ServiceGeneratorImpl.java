@@ -59,7 +59,8 @@ final class ServiceGeneratorImpl implements ServiceGenerator{
 
         ClassName repository = ClassName.get(
                 graphEntity.getPackageName(),
-                repositoryName
+                graphEntity.getClassName() +
+                        repositoryName
         );
 
         TypeSpec service = createServiceClass(
