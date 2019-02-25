@@ -1,109 +1,145 @@
-
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.TypeSpec;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
 import org.junit.Test;
-import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class QueryGeneratorTest {
     @Test
-    public void givenSingleGraphEntityAndSingleService_whenGeneratingResolver_thenReturnTypeSpec(){
-        QueryGenerator generator = new QueryGeneratorImpl("QueryResolver",
-                Mockito.mock(ClassName.class));
+    public void givenSingleGraphEntity_whenGeneratingResolver_thenGenerateResolver()
+    throws QueryGeneratorException{
+        QueryGenerator generator = new QueryGeneratorImpl();
 
         List<GraphEntity> graphEntities = new ArrayList<>();
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.test")
-                .modelDirectory("")
+                .packageName("io.query")
+                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
                 .className("Person")
                 .build();
         graphEntities.add(graphEntity);
 
-        List<TypeSpec> services = new ArrayList<>();
-        services.add(TypeSpec.classBuilder("PeronService").build());
+        generator.generate(graphEntities);
 
-        Object result = generator.generateQuery(graphEntities, services);
-        assertNotNull(result);
-        assertTrue(result instanceof TypeSpec);
+        assertTrue(
+                Files.exists(
+                        Paths.get(
+                                "src/test/java/io/query/QueryResolver.java"
+                        )
+                )
+        );
     }
 
     @Test
-    public void givenGraphEntitiesAndServices_whenGeneratingResolver_thenReturnTypeSpec(){
-        QueryGenerator generator = new QueryGeneratorImpl("QueryResolver",
-                Mockito.mock(ClassName.class));
+    public void givenSingleGraphEntity_whenGeneratingResolver_thenGenerateAppropriateResolver()
+            throws QueryGeneratorException, IOException {
+        QueryGenerator generator = new QueryGeneratorImpl();
 
         List<GraphEntity> graphEntities = new ArrayList<>();
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.test")
-                .modelDirectory("")
+                .packageName("io.query")
+                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
                 .className("Person")
                 .build();
-        GraphEntity graphEntityTwo = new GraphEntity.Builder()
+        graphEntities.add(graphEntity);
+
+        generator.generate(graphEntities);
+
+        assertTrue(
+                Arrays.equals(
+                        Files.readAllBytes(Paths.get("src/test/java/io/query/QueryResolver.java")),
+                        Files.readAllBytes(Paths.get("src/test/resources/QueryResolver.java"))
+                )
+        );
+    }
+
+    @Test
+    public void givenGraphEntitiesInDifferentPackages_whenGeneratingResolver_thenGenerateResolver()
+    throws QueryGeneratorException{
+        QueryGenerator generator = new QueryGeneratorImpl();
+
+        List<GraphEntity> graphEntities = new ArrayList<>();
+        GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.test")
-                .modelDirectory("")
+                .packageName("io.query")
+                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("Dog")
+                .className("Doggo")
+                .build();
+
+        //disregards second entitiy's package, defaults
+        //into first entity
+        GraphEntity graphEntityTwo = new GraphEntity.Builder()
+                .property("id", "int")
+                .packageName("io.query.two")
+                .modelDirectory("src/test/java/")
+                .idType("java.lang.String")
+                .idName("id")
+                .className("Catto")
                 .build();
         graphEntities.add(graphEntity);
         graphEntities.add(graphEntityTwo);
 
-        List<TypeSpec> services = new ArrayList<>();
-        services.add(TypeSpec.classBuilder("PeronService").build());
-        services.add(TypeSpec.classBuilder("DogService").build());
+        generator.generate(graphEntities);
 
-        Object result = generator.generateQuery(graphEntities, services);
-        assertNotNull(result);
-        assertTrue(result instanceof TypeSpec);
+        assertTrue(
+                Files.exists(
+                        Paths.get(
+                                "src/test/java/io/query/QueryResolver.java"
+                        )
+                )
+        );
     }
 
-    @Test(expected = QueryGeneratorException.class)
-    public void givenMismatchGraphEntity_whenGeneratingResolver_thenThrowQueryGeneratorException(){
-        QueryGenerator generator = new QueryGeneratorImpl("QueryResolver",
-                Mockito.mock(ClassName.class));
-        List<GraphEntity> graphEntities = new ArrayList<>();
-        List<TypeSpec> services = new ArrayList<>();
-        services.add(TypeSpec.classBuilder("PeronService").build());
+    @Test
+    public void givenGraphEntitiesInDifferentPackages_whenGeneratingResolver_thenGenerateAppropriateResolver()
+            throws QueryGeneratorException, IOException{
+        QueryGenerator generator = new QueryGeneratorImpl();
 
-        Object result = generator.generateQuery(graphEntities, services);
-        assertNotNull(result);
-        assertTrue(result instanceof TypeSpec);
-    }
-
-    @Test(expected = QueryGeneratorException.class)
-    public void givenMismatchService_whenGeneratingResolver_thenThrowQueryGeneratorException(){
-        QueryGenerator generator = new QueryGeneratorImpl("QueryResolver",
-                Mockito.mock(ClassName.class));
         List<GraphEntity> graphEntities = new ArrayList<>();
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.test")
-                .modelDirectory("")
+                .packageName("io.query")
+                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("Person")
+                .className("Doggo")
+                .build();
+
+        //disregards second entitiy's package, defaults
+        //into first entity
+        GraphEntity graphEntityTwo = new GraphEntity.Builder()
+                .property("id", "int")
+                .packageName("io.query.two")
+                .modelDirectory("src/test/java/")
+                .idType("java.lang.String")
+                .idName("id")
+                .className("Catto")
                 .build();
         graphEntities.add(graphEntity);
+        graphEntities.add(graphEntityTwo);
 
-        List<TypeSpec> services = new ArrayList<>();
+        generator.generate(graphEntities);
 
-        Object result = generator.generateQuery(graphEntities, services);
-        assertNotNull(result);
-        assertTrue(result instanceof TypeSpec);
+        assertTrue(
+                Arrays.equals(
+                        Files.readAllBytes(Paths.get("src/test/java/io/query/QueryResolver.java")),
+                        Files.readAllBytes(Paths.get("src/test/resources/QueryResolver2.java"))
+                )
+        );
     }
 }
-

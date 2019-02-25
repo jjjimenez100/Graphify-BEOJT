@@ -2,6 +2,7 @@ package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
 import com.squareup.javapoet.*;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
+import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNameUtil;
 import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNames;
 
 import javax.lang.model.element.Modifier;
@@ -199,7 +200,8 @@ final class QueryGeneratorImpl implements QueryGenerator{
                                 ".orElseThrow(RuntimeException::new);\n", serviceName
                 ).build();
 
-        ParameterSpec idParameter = ParameterSpec.builder(idType, "id")
+        ParameterSpec idParameter = ParameterSpec.builder(
+                ClassNameUtil.INSTANCE.toBoxedType(idType), "id")
                 .build();
 
         String singularEntityName = entityClassName.simpleName().toLowerCase();
