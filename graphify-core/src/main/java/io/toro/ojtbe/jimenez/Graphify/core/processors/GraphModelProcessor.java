@@ -174,7 +174,14 @@ public final class GraphModelProcessor extends AbstractProcessor {
         for(Path candidate: candidates){
             if(isPackageMatched(packageStatement,
                     candidate.toAbsolutePath().toString())){
-                return candidate.getParent().toString();
+
+                String packageDir = packageStatement.replace(
+                        ".", "/"
+                );
+
+                return candidate.getParent()
+                        .toString()
+                        .replace(packageDir, "");
             }
         }
 
