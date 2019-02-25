@@ -145,14 +145,14 @@ public final class GraphModelProcessor extends AbstractProcessor {
     }
 
     private String getIdName(Element annotatedEntity){
-        String idName = "";
-
         for(Element property: annotatedEntity.getEnclosedElements()){
             Id idProperty = property.getAnnotation(Id.class);
-            idName = property.getSimpleName().toString();
+            if(Objects.nonNull(idProperty)){
+                return property.getSimpleName().toString();
+            }
         }
 
-        return idName;
+        return "";
     }
 
     private String getModelDirectory(String lookupName,
@@ -216,13 +216,8 @@ public final class GraphModelProcessor extends AbstractProcessor {
 
             if(isValidType(type)){
                 String name = getName(property);
-                ClassName typeEquivalent = ClassNameUtil.INSTANCE
-                        .toBoxedType(
-                                ClassName.get(
-                                        "",
-                                        type
-                                )
-                        );
+                ClassName typeEquivalent
+                        = ClassName.get("", type);
 
                 if(idName.equals(name)){
                     entityBuilder.idType(

@@ -6,16 +6,30 @@ import org.junit.Test;
 
 import javax.tools.JavaFileObject;
 
+import java.nio.file.Paths;
+
 import static com.google.testing.compile.CompilationSubject.*;
 import static com.google.testing.compile.Compiler.javac;
 
 
 public class GraphModelProcessorTest {
     @Test
-    public void givenAnnotatedClassWithValidConditions_whenAnnotationProcessing_thenProceedWithNoError(){
+    public void givenAnnotatedClassWithIntId_whenAnnotationProcessing_thenProceedWithNoError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
         JavaFileObject modelTest = JavaFileObjects.forResource("CaseOne.java");
+
+        Compilation compilation = javac().withProcessors(processor).compile(modelTest);
+        assertThat(compilation).succeeded();
+    }
+
+    @Test
+    public void givenAnnotatedClassWithStringId_whenAnnotationProcessing_thenProceedWithNoError(){
+        System.out.println(Paths.get(Paths.get("").toAbsolutePath().toString() + "/src/main/java"));
+        GraphModelProcessor processor = new GraphModelProcessor();
+
+        JavaFileObject modelTest = JavaFileObjects.forResource("CaseNine.java");
+
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).succeeded();
