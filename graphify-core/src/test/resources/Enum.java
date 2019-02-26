@@ -2,10 +2,9 @@ package io.toro.ojtbe.jimenez.Graphify.core;
 
 import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
 import org.springframework.data.annotation.Id;
-@GraphModel
 
-public interface CaseFour {
+@GraphModel
+public enum Enum {
     @Id
-    public int id = 1;
-    public String name = "s";
+    THIS, IS, AN, ENUM;
 }

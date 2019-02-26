@@ -4,12 +4,12 @@ import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
 import org.springframework.data.annotation.Id;
 
 @GraphModel
-public abstract class CaseThree {
+public class StringId {
     @Id
-    private int id;
+    private String id;
     private String name;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 }

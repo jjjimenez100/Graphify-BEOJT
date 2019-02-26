@@ -4,7 +4,7 @@ import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
 import org.springframework.data.annotation.Id;
 
 @GraphModel
-public class CaseSeven {
+public class MultipleId {
     @Id
     private int id;
     @Id

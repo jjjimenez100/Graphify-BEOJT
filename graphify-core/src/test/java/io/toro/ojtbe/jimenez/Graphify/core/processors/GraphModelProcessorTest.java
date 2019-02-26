@@ -28,7 +28,7 @@ public class GraphModelProcessorTest {
         System.out.println(Paths.get(Paths.get("").toAbsolutePath().toString() + "/src/main/java"));
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseNine.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("StringId.java");
 
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
@@ -39,7 +39,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedAbstractClass_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseThree.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("Abstract.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).failed();
@@ -51,7 +51,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedInterface_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseFour.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("Interface.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
 
@@ -64,7 +64,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedEnum_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseFive.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("Enum.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
 
@@ -77,7 +77,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedPrivateClassWithValidConditions_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseSix.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("Private.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).failed();
@@ -89,19 +89,19 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedClassWithMultipleIdAnnotation_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseSeven.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("MultipleId.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).failed();
         assertThat(compilation).hadErrorCount(1);
-        assertThat(compilation).hadErrorContaining("Multiple id candidates for: CaseSeven");
+        assertThat(compilation).hadErrorContaining("Multiple id candidates for: MultipleId");
     }
 
     @Test
     public void givenAnnotatedClassWithNoIdAnnotation_whenAnnotationProcessing_thenThrowError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseEight.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("NoId.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).failed();

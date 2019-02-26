@@ -4,8 +4,7 @@ import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
 import org.springframework.data.annotation.Id;
 
 @GraphModel
-private class CaseSix {
-    @Id
+public class NoId {
     private int id;
     private String name;
 

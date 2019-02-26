@@ -4,7 +4,12 @@ import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
 import org.springframework.data.annotation.Id;
 
 @GraphModel
-public enum CaseFive {
+public abstract class Abstract {
     @Id
-    THIS, IS, AN, ENUM;
+    private int id;
+    private String name;
+
+    public int getId() {
+        return id;
+    }
 }

@@ -1,8 +1,8 @@
 package io.query;
 
+import com.aso.Catto;
+import com.aso.CattoService;
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
-import io.query.two.Catto;
-import io.query.two.CattoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

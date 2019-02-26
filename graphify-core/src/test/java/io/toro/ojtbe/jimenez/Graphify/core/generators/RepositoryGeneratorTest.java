@@ -18,58 +18,82 @@ public class RepositoryGeneratorTest {
 
     @After
     public void deleteGeneratedFiles() throws IOException{
-        Files.walk(Paths.get("src/test/java/io/query/"))
-                .filter(Files::isRegularFile)
-                .map(Path::toFile)
-                .forEach(File::delete);
+        Path testingPath = Paths.get("src/test/java/io/query/");
+
+        if(Files.exists(testingPath)){
+            Files.walk(testingPath)
+                    .filter(Files::isRegularFile)
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+    }
+
+    // Failing test case ; repository generator makes use of lastIndexOf
+    // on "." to get the class name from the FQN
+    @Test(expected = StringIndexOutOfBoundsException.class)
+    public void givenInvalidFQN_whenCallingGenerateRepository_thenThrowStringIndexOutOfBoundsException()
+            throws RepositoryGeneratorException {
+        RepositoryGenerator repositoryGenerator =
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
+
+        GraphEntity graphEntity = new GraphEntity.Builder()
+                .property("id", "int")
+                .idType("int")
+                .idName("id")
+                .fullyQualifiedName("io/query/Primitive")
+                .build();
+
+        repositoryGenerator.generate(graphEntity);
     }
 
     @Test
     public void givenPrimitiveAsPrimaryKey_whenCallingGenerateRepository_thenGenerateRepositoryFile()
-    throws RepositoryGeneratorException, IOException {
+            throws RepositoryGeneratorException, IOException {
         RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("OneR")
+                .fullyQualifiedName("io.query.Primitive")
                 .build();
 
         repositoryGenerator.generate(graphEntity);
 
         assertTrue(
                 Arrays.equals(
-                        Files.readAllBytes(Paths.get("src/test/java/io/query/OneRRepository.java")),
-                                Files.readAllBytes(Paths.get("src/test/resources/OneRRepository.java"))
+                        Files.readAllBytes(Paths.get("src/test/java/io/query/PrimitiveRepository.java")),
+                                Files.readAllBytes(Paths.get("src/test/resources/PrimitiveRepository.java"))
                 )
         );
     }
 
     @Test
-    public void givenStringAsPrimaryKey_whenCallingGenerateRepository_thenGenerateRepositoryFile()
+    public void givenNonPrimitiveAsPrimaryKey_whenCallingGenerateRepository_thenGenerateRepositoryFile()
         throws RepositoryGeneratorException, IOException{
         RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("java.lang.String")
                 .idName("id")
-                .className("TwoR")
+                .fullyQualifiedName("io.query.NonPrimitive")
                 .build();
 
         repositoryGenerator.generate(graphEntity);
 
         assertTrue(
                 Arrays.equals(
-                        Files.readAllBytes(Paths.get("src/test/java/io/query/TwoRRepository.java")),
-                        Files.readAllBytes(Paths.get("src/test/resources/TwoRRepository.java"))
+                        Files.readAllBytes(Paths.get("src/test/java/io/query/NonPrimitiveRepository.java")),
+                        Files.readAllBytes(Paths.get("src/test/resources/NonPrimitiveRepository.java"))
                 )
         );
     }
@@ -78,15 +102,15 @@ public class RepositoryGeneratorTest {
     public void givenGraphEntity_whenCallingGenerateRepository_thenGenerateRepositoryFile()
             throws RepositoryGeneratorException{
         RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("Person")
+                .fullyQualifiedName("io.query.Person")
                 .build();
 
         repositoryGenerator.generate(graphEntity);
@@ -104,14 +128,14 @@ public class RepositoryGeneratorTest {
     public void givenGraphEntityWithNoProperties_whenCallingGenerateRepository_GenerateRepositoryFile()
             throws RepositoryGeneratorException{
         RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("Cat")
+                .fullyQualifiedName("io.query.Cat")
                 .build();
 
         repositoryGenerator.generate(graphEntity);
@@ -127,35 +151,17 @@ public class RepositoryGeneratorTest {
 
     @Test(expected = NullPointerException.class)
     // Java poet tries to access a null class name
-    public void givenGraphEntityWithNoPackageName_whenCallingGenerateRepository_thenThrowNPE()
+    public void givenGraphEntityWithNoFQN_whenCallingGenerateRepository_thenThrowNPE()
             throws RepositoryGeneratorException{
         RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("Person")
-                .build();
-
-        repositoryGenerator.generate(graphEntity);
-    }
-
-    @Test(expected = NullPointerException.class)
-    //java poet tries to access a path that is null
-    public void givenGraphEntityWithNoModelDirectory_whenCallingGenerateRepository_thenThrowNPE()
-            throws RepositoryGeneratorException {
-        RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
-
-        GraphEntity graphEntity = new GraphEntity.Builder()
-                .property("id", "int")
-                .packageName("io.query")
-                .idType("int")
-                .idName("id")
-                .className("Person")
                 .build();
 
         repositoryGenerator.generate(graphEntity);
@@ -166,14 +172,14 @@ public class RepositoryGeneratorTest {
     public void givenGraphEntityWithNoIdType_whenCallingGenerateRepository_thenThrowNPE()
             throws RepositoryGeneratorException {
         RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idName("id")
-                .className("Person")
+                .fullyQualifiedName("io.query.Cat")
                 .build();
 
         repositoryGenerator.generate(graphEntity);
@@ -184,14 +190,14 @@ public class RepositoryGeneratorTest {
     public void givenGraphEntityWithNoIdName_whenCallingGenerateRepository_thenGenerateRepositoryFile()
             throws RepositoryGeneratorException{
         RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
+                new RepositoryGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("int")
-                .className("Dog")
+                .fullyQualifiedName("io.query.Dog")
                 .build();
 
         repositoryGenerator.generate(graphEntity);
@@ -200,31 +206,6 @@ public class RepositoryGeneratorTest {
                 Files.exists(
                         Paths.get(
                                 "src/test/java/io/query/DogRepository.java"
-                        )
-                )
-        );
-    }
-
-    @Test
-    public void givenGraphEntityWithNoClassName_whenCallingGenerateRepository_thenGenerateRepositoryFile()
-            throws RepositoryGeneratorException {
-        RepositoryGenerator repositoryGenerator =
-                new RepositoryGeneratorImpl();
-
-        GraphEntity graphEntity = new GraphEntity.Builder()
-                .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
-                .idType("int")
-                .idName("id")
-                .build();
-
-        repositoryGenerator.generate(graphEntity);
-
-        assertTrue(
-                Files.exists(
-                        Paths.get(
-                                "src/test/java/io/query/nullRepository.java"
                         )
                 )
         );

@@ -17,73 +17,77 @@ public class ServiceGeneratorTest {
 
     @After
     public void deleteGeneratedFiles() throws IOException{
-        Files.walk(Paths.get("src/test/java/io/query/"))
-                .filter(Files::isRegularFile)
-                .map(Path::toFile)
-                .forEach(File::delete);
+        Path testingPath = Paths.get("src/test/java/io/query/");
+
+        if(Files.exists(testingPath)){
+            Files.walk(testingPath)
+                    .filter(Files::isRegularFile)
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     @Test
     public void givenPrimitiveKey_whenCallingGenerateService_thenGenerateService() throws ServiceGeneratorException, IOException {
         ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
+                new ServiceGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("OneS")
+                .fullyQualifiedName("io.query.PrimitiveServ")
                 .build();
 
         serviceGenerator.generate(graphEntity);
 
         assertTrue(
                 Arrays.equals(
-                        Files.readAllBytes(Paths.get("src/test/java/io/query/OneSService.java")),
-                        Files.readAllBytes(Paths.get("src/test/resources/OneSService.java"))
+                        Files.readAllBytes(Paths.get("src/test/java/io/query/PrimitiveServService.java")),
+                        Files.readAllBytes(Paths.get("src/test/resources/PrimitiveServService.java"))
                 )
         );
     }
 
     @Test
-    public void givenStringOrObjectKey_whenCallingGenerateService_thenGenerateService()
+    public void givenNonPrimitiveKey_whenCallingGenerateService_thenGenerateService()
             throws ServiceGeneratorException, IOException {
         ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
+                new ServiceGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("java.lang.String")
                 .idName("id")
-                .className("TwoS")
+                .fullyQualifiedName("io.query.NonPrimitiveServ")
                 .build();
 
         serviceGenerator.generate(graphEntity);
 
         assertTrue(
                 Arrays.equals(
-                        Files.readAllBytes(Paths.get("src/test/java/io/query/TwoSService.java")),
-                        Files.readAllBytes(Paths.get("src/test/resources/TwoSService.java"))
+                        Files.readAllBytes(Paths.get("src/test/java/io/query/NonPrimitiveServService.java")),
+                        Files.readAllBytes(Paths.get("src/test/resources/NonPrimitiveServService.java"))
                 )
         );
     }
 
     @Test
-    public void givenEntitySpecAndClassName_whenCallingGenerateService_thenGenerateService() throws ServiceGeneratorException{
+    public void givenEntityAndFQNWhenCallingGenerateService_thenGenerateService() throws ServiceGeneratorException{
         ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
+                new ServiceGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("int")
                 .idName("id")
-                .className("Person")
+                .fullyQualifiedName("io.query.Person")
                 .build();
 
         serviceGenerator.generate(graphEntity);
@@ -97,42 +101,17 @@ public class ServiceGeneratorTest {
         );
     }
 
-    @Test
-    public void givenEntityWithNoPropertySpecAndClassName_whenCallingGenerateService_thenGenerateService() throws ServiceGeneratorException{
-        ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
-
-        GraphEntity graphEntity = new GraphEntity.Builder()
-                .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
-                .idType("int")
-                .idName("id")
-                .className("Doggo")
-                .build();
-
-        serviceGenerator.generate(graphEntity);
-
-        assertTrue(
-                Files.exists(
-                        Paths.get(
-                                "src/test/java/io/query/DoggoService.java"
-                        )
-                )
-        );
-    }
-
     @Test(expected = NullPointerException.class)
-    public void givenEntityWithNoPackageNameSpecAndClassName_whenCallingGenerateService_thenThrowNPE() throws ServiceGeneratorException{
+    public void givenEntityWithNoFQN_whenCallingGenerateService_thenThrowNPE() throws ServiceGeneratorException{
         ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
+                new ServiceGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .modelDirectory("")
                 .idType("int")
                 .idName("id")
-                .className("Person")
                 .build();
 
         serviceGenerator.generate(
@@ -141,32 +120,16 @@ public class ServiceGeneratorTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void givenEntityWithNoModelDirectorySpecAndClassName_whenCallingGenerateService_thenThrowNPE() throws ServiceGeneratorException{
+    public void givenEntityWithNoIdTypeSpec_whenCallingGenerateService_thenThrowNPE() throws ServiceGeneratorException{
         ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
+                new ServiceGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.test")
-                .idType("int")
                 .idName("id")
-                .className("Person")
-                .build();
-
-        serviceGenerator.generate(graphEntity);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void givenEntityWithNoIdTypeSpecAndClassName_whenCallingGenerateService_thenThrowNPE() throws ServiceGeneratorException{
-        ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
-
-        GraphEntity graphEntity = new GraphEntity.Builder()
-                .property("id", "int")
-                .packageName("io.test")
-                .modelDirectory("")
-                .idName("id")
-                .className("Person")
+                .fullyQualifiedName("io.query.Person")
                 .build();
 
         serviceGenerator.generate(
@@ -175,17 +138,17 @@ public class ServiceGeneratorTest {
     }
 
     @Test
-    public void givenEntityWithNoIdNameSpecAndClassName_whenCallingGenerateService_thenGenerateService()
+    public void givenEntityWithNoIdNameSpec_whenCallingGenerateService_thenGenerateService()
             throws ServiceGeneratorException{
         ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
+                new ServiceGeneratorImpl.Builder()
+                        .baseDirectory(Paths.get("src/test/java"))
+                        .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
                 .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
                 .idType("int")
-                .className("Catty")
+                .fullyQualifiedName("io.query.Catty")
                 .build();
 
         serviceGenerator.generate(graphEntity);
@@ -194,30 +157,6 @@ public class ServiceGeneratorTest {
                 Files.exists(
                         Paths.get(
                                 "src/test/java/io/query/CattyService.java"
-                        )
-                )
-        );
-    }
-
-    @Test
-    public void givenEntityWithNoClassNameSpecAndClassName_whenCallingGenerateService_thenGenerateService() throws ServiceGeneratorException{
-        ServiceGenerator serviceGenerator =
-                new ServiceGeneratorImpl();
-
-        GraphEntity graphEntity = new GraphEntity.Builder()
-                .property("id", "int")
-                .packageName("io.query")
-                .modelDirectory("src/test/java/")
-                .idType("int")
-                .idName("id")
-                .build();
-
-        serviceGenerator.generate(graphEntity);
-
-        assertTrue(
-                Files.exists(
-                        Paths.get(
-                                "src/test/java/io/query/nullService.java"
                         )
                 )
         );

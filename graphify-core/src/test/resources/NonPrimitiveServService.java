@@ -7,9 +7,9 @@ import javax.transaction.Transactional;
 
 @Transactional
 @Autowired
-public class TwoSService extends ServiceImpl<TwoS, String> {
+public class NonPrimitiveServService extends ServiceImpl<NonPrimitiveServ, String> {
    @Autowired
-   public TwoSService(TwoSRepository twoSRepository) {
-      super(twoSRepository);
+   public NonPrimitiveServService(NonPrimitiveServRepository nonPrimitiveServRepository) {
+      super(nonPrimitiveServRepository);
    }
 }

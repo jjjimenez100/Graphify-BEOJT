@@ -8,14 +8,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
 import io.toro.ojtbe.jimenez.Graphify.annotations.GraphModel;
@@ -134,11 +127,9 @@ public final class GraphModelProcessor extends AbstractProcessor {
 
         GraphEntity.Builder entityBuilder = new GraphEntity
                 .Builder()
-                .className(className)
-                .packageName(packageName)
-                .idName(idName)
-                .modelDirectory(getModelDirectory(className +
-                        ".java", packageName));
+                .fullyQualifiedName(packageName + "." + className)
+                .idName(idName);
+
         initGraphProperties(idName, annotatedEntity, entityBuilder);
 
         return entityBuilder.build();
@@ -153,66 +144,6 @@ public final class GraphModelProcessor extends AbstractProcessor {
         }
 
         return "";
-    }
-
-    private String getModelDirectory(String lookupName,
-                                     String packageStatement){
-
-        List<Path> candidates = Collections.emptyList();
-        try{
-            candidates = Files.walk(Paths.get(""))
-                    .filter(Files::isRegularFile)
-                    .filter((filePath) -> {
-                        return filePath.toString()
-                                .endsWith(lookupName);
-                    })
-                    .collect(Collectors.toList());
-        } catch(IOException e){
-            raiseError("IO Exception at: " + e.getMessage());
-        }
-
-        for(Path candidate: candidates){
-            if(isPackageMatched(packageStatement,
-                    candidate.toAbsolutePath().toString())){
-
-                String packageDir = packageStatement.replace(
-                        ".", "/"
-                );
-
-                return candidate.getParent()
-                        .toString()
-                        .replace(packageDir, "");
-            }
-        }
-
-        raiseError("All candidates are not under package: " +
-                packageStatement + " or you might not be using " +
-                "the filesystem to store your classes");
-        return "";
-    }
-
-    private boolean isPackageMatched(String packageStatement,
-                                     String path){
-        File candidate = new File(path);
-
-        if(!packageStatement.isEmpty()){
-            try(Scanner reader = new Scanner(candidate)){
-                String declaredPackage = reader.nextLine();
-
-                while(declaredPackage.isEmpty()){
-                    declaredPackage = reader.nextLine();
-                }
-
-                return declaredPackage.contains(packageStatement);
-
-            } catch(FileNotFoundException e){
-                raiseError("File not found at: " + e.getMessage());
-
-                return false;
-            }
-        } else {
-            return true;
-        }
     }
 
     private void initGraphProperties(String idName,
