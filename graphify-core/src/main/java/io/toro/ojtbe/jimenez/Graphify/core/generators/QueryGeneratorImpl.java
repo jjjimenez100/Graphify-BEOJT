@@ -7,6 +7,7 @@ import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNames;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -16,23 +17,60 @@ final class QueryGeneratorImpl implements QueryGenerator{
     private final Modifier access;
     private final ClassName parent;
     private final String serviceName;
+    private final Path baseDirectory;
 
-    QueryGeneratorImpl(){
-        this.name = "QueryResolver";
-        this.access = Modifier.PUBLIC;
-        this.parent = ClassNames.GRAPHQL_QUERY_RESOLVER
-                .getClassName();
-        this.serviceName = "Service";
+    private QueryGeneratorImpl(Builder builder){
+        this.name = builder.name;
+        this.access = builder.access;
+        this.parent = builder.parent;
+        this.serviceName = builder.serviceName;
+        this.baseDirectory = builder.baseDirectory;
     }
 
-    QueryGeneratorImpl(String name,
-                       Modifier access,
-                       ClassName parent,
-                       String serviceName){
-        this.name = name;
-        this.access = access;
-        this.parent = parent;
-        this.serviceName = serviceName;
+    static class Builder{
+        private String name;
+        private Modifier access;
+        private ClassName parent;
+        private String serviceName;
+        private Path baseDirectory;
+
+        Builder(){
+            this.name = "QueryResolver";
+            this.access = Modifier.PUBLIC;
+            this.parent = ClassNames.GRAPHQL_QUERY_RESOLVER
+                    .getClassName();
+            this.serviceName = "Service";
+            this.baseDirectory = Paths.get("src/main/java");
+        }
+
+        Builder name(String name){
+            this.name = name;
+            return this;
+        }
+
+        Builder access(Modifier access){
+            this.access = access;
+            return this;
+        }
+
+        Builder parent(ClassName parent){
+            this.parent = parent;
+            return this;
+        }
+
+        Builder serviceName(String serviceName){
+            this.serviceName = serviceName;
+            return this;
+        }
+
+        Builder baseDirectory(Path baseDirectory){
+            this.baseDirectory = baseDirectory;
+            return this;
+        }
+
+        QueryGeneratorImpl build(){
+            return new QueryGeneratorImpl(this);
+        }
     }
 
     @Override
@@ -51,24 +89,24 @@ final class QueryGeneratorImpl implements QueryGenerator{
     @Override
     public void generate(List<GraphEntity> graphEntities)
             throws QueryGeneratorException {
+
+        String fullyQualifiedName =
+                graphEntities.get(0).getFullyQualifiedName();
+
+        String packageStatement
+                = fullyQualifiedName.substring(
+                        0, fullyQualifiedName.lastIndexOf(".")
+        );
+
         TypeSpec resolver = createQueryClass(graphEntities);
 
-        // write main query resolver to
-        // default package of first entity
-        GraphEntity graphEntity = graphEntities.get(0);
-        JavaFile file = JavaFile
-                .builder(
-                        graphEntity.getPackageName(),
-                        resolver
-                )
+        JavaFile file = JavaFile.builder(packageStatement, resolver)
                 .skipJavaLangImports(true)
                 .indent("   ")
                 .build();
 
         try {
-            file.writeTo(Paths.get(
-                    graphEntity.getModelDirectory()
-            ));
+            file.writeTo(baseDirectory);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -88,16 +126,26 @@ final class QueryGeneratorImpl implements QueryGenerator{
                 .addModifiers(Modifier.PUBLIC);
 
         for(GraphEntity graphEntity: graphEntities){
-            String serviceType = graphEntity.getClassName() + serviceName;
-            String entityPackage = graphEntity.getPackageName();
+            String fullyQualifiedName =
+                    graphEntity.getFullyQualifiedName();
+
+            int nameBounds
+                    = fullyQualifiedName.lastIndexOf(".");
+
+            String packageStatement
+                    = fullyQualifiedName.substring(0, nameBounds);
+
+            String entityName
+                    = fullyQualifiedName.substring(nameBounds + 1);
+
+            String serviceType = entityName + serviceName;
 
             ClassName service = ClassName.get(
-                    entityPackage,
+                    packageStatement,
                     serviceType
             );
 
-            String serviceName = Character
-                    .toLowerCase(serviceType.charAt(0)) +
+            String serviceName = Character.toLowerCase(serviceType.charAt(0)) +
                     serviceType.substring(1);
 
             queryClassBuilder.addField(
@@ -118,7 +166,7 @@ final class QueryGeneratorImpl implements QueryGenerator{
             constructorBuilder.addStatement(initializer);
 
             ClassName entity = ClassName.get(
-                    entityPackage, graphEntity.getClassName()
+                    packageStatement, entityName
             );
 
             queryClassBuilder.addMethod(
@@ -191,8 +239,7 @@ final class QueryGeneratorImpl implements QueryGenerator{
 
     private MethodSpec createGetById(String serviceName,
                                      ClassName entityClassName,
-                                     ClassName idType
-    ){
+                                     ClassName idType){
         //entity get individual
         CodeBlock getIndividual = CodeBlock.builder()
                 .add(

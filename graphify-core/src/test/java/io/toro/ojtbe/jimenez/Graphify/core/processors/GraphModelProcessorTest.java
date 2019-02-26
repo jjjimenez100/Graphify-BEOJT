@@ -17,7 +17,7 @@ public class GraphModelProcessorTest {
     public void givenAnnotatedClassWithIntId_whenAnnotationProcessing_thenProceedWithNoError(){
         GraphModelProcessor processor = new GraphModelProcessor();
 
-        JavaFileObject modelTest = JavaFileObjects.forResource("CaseOne.java");
+        JavaFileObject modelTest = JavaFileObjects.forResource("IntId.java");
 
         Compilation compilation = javac().withProcessors(processor).compile(modelTest);
         assertThat(compilation).succeeded();

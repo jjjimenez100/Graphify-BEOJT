@@ -12,42 +12,30 @@ import java.util.Objects;
  * @author Joshua Jimenez
  */
 public final class GraphEntity {
-
-    private final String className;
-    private final String packageName;
+    private final String fullyQualifiedName;
     private final String idName;
     private final String idType;
-    private final String modelDirectory;
     private final Map<String, String> properties;
 
     private GraphEntity(Builder builder){
-        this.className = builder.className;
+        this.fullyQualifiedName = builder.fullyQualifiedName;
         this.idName = builder.idName;
-        this.packageName = builder.packageName;
         this.idType = builder.idType;
-        this.modelDirectory = builder.modelDirectory;
         this.properties = Collections.unmodifiableMap(builder.properties);
     }
 
     public static class Builder{
-        private String className;
-        private String packageName;
+        private String fullyQualifiedName;
         private String idName;
         private String idType;
         private Map<String, String> properties;
-        private String modelDirectory;
 
         public Builder(){
             properties = new HashMap<>();
         }
 
-        public Builder className(String className){
-            this.className = className;
-            return this;
-        }
-
-        public Builder packageName(String packageName){
-            this.packageName = packageName;
+        public Builder fullyQualifiedName(String fullyQualifiedName){
+            this.fullyQualifiedName = fullyQualifiedName;
             return this;
         }
 
@@ -66,22 +54,13 @@ public final class GraphEntity {
             return this;
         }
 
-        public Builder modelDirectory(String modelDirectory){
-            this.modelDirectory = modelDirectory;
-            return this;
-        }
-
         public GraphEntity build(){
             return new GraphEntity(this);
         }
     }
 
-    public String getClassName() {
-        return className;
-    }
-
-    public String getPackageName() {
-        return packageName;
+    public String getFullyQualifiedName() {
+        return fullyQualifiedName;
     }
 
     public String getIdName() {
@@ -96,18 +75,12 @@ public final class GraphEntity {
         return idType;
     }
 
-    public String getModelDirectory() {
-        return modelDirectory;
-    }
-
     @Override
     public String toString() {
         return "GraphEntity{" +
-                "className='" + className + '\'' +
-                ", packageName='" + packageName + '\'' +
+                "fullyQualifiedName='" + fullyQualifiedName + '\'' +
                 ", idName='" + idName + '\'' +
                 ", idType='" + idType + '\'' +
-                ", modelDirectory='" + modelDirectory + '\'' +
                 ", properties=" + properties +
                 '}';
     }
@@ -117,17 +90,14 @@ public final class GraphEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GraphEntity that = (GraphEntity) o;
-        return Objects.equals(className, that.className) &&
-                Objects.equals(packageName, that.packageName) &&
+        return Objects.equals(fullyQualifiedName, that.fullyQualifiedName) &&
                 Objects.equals(idName, that.idName) &&
                 Objects.equals(idType, that.idType) &&
-                Objects.equals(modelDirectory, that.modelDirectory) &&
                 Objects.equals(properties, that.properties);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(className, packageName, idName,
-                idType, modelDirectory, properties);
+        return Objects.hash(fullyQualifiedName, idName, idType, properties);
     }
 }

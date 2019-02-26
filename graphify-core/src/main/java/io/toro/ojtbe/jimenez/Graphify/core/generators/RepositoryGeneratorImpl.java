@@ -10,6 +10,7 @@ import io.toro.ojtbe.jimenez.Graphify.core.poet.ClassNames;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -18,20 +19,52 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
     private final String name;
     private final Modifier access;
     private final ClassName parent;
+    private final Path baseDirectory;
 
-    RepositoryGeneratorImpl(){
-        this.name = "Repository";
-        this.access = Modifier.PUBLIC;
-        this.parent = ClassNames.CRUD_REPOSITORY
-                .getClassName();
+    private RepositoryGeneratorImpl(Builder builder){
+        this.name = builder.name;
+        this.access = builder.access;
+        this.parent = builder.parent;
+        this.baseDirectory = builder.baseDirectory;
     }
 
-    RepositoryGeneratorImpl(String name,
-                            Modifier access,
-                            ClassName parent){
-        this.name = name;
-        this.access = access;
-        this.parent = parent;
+    static class Builder{
+        private String name;
+        private Modifier access;
+        private ClassName parent;
+        private Path baseDirectory;
+
+        Builder(){
+            this.name = "Repository";
+            this.baseDirectory = Paths.get("src/main/java");
+            this.access = Modifier.PUBLIC;
+            this.parent = ClassNames.CRUD_REPOSITORY
+                    .getClassName();
+        }
+
+        Builder name(String name){
+            this.name = name;
+            return this;
+        }
+
+        Builder access(Modifier access){
+            this.access = access;
+            return this;
+        }
+
+        Builder parent(ClassName parent){
+            this.parent = parent;
+            return this;
+        }
+
+        Builder baseDirectory(Path baseDirectory){
+            this.baseDirectory = baseDirectory;
+            return this;
+        }
+
+        RepositoryGeneratorImpl build(){
+            return new RepositoryGeneratorImpl(this);
+        }
     }
 
     @Override
@@ -52,24 +85,29 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
     @Override
     public void generate(GraphEntity graphEntity)
     throws RepositoryGeneratorException {
+        String fullyQualifiedName =
+                graphEntity.getFullyQualifiedName();
+
+        int nameBounds
+                = fullyQualifiedName.lastIndexOf(".");
+
+        String packageStatement
+                = fullyQualifiedName.substring(0, nameBounds);
+
+        String entityName
+                = fullyQualifiedName.substring(nameBounds + 1);
+
         TypeSpec repository = createRepositoryInterface(
-                graphEntity, parent
+                graphEntity, parent, entityName, packageStatement
         );
 
-        // write repository to the same path and package
-        // as the annotated entity model
-        JavaFile file = JavaFile
-                .builder(
-                        graphEntity.getPackageName(),
-                        repository
-                )
+        JavaFile file = JavaFile.builder(packageStatement, repository)
                 .skipJavaLangImports(true)
                 .indent("   ")
                 .build();
+
         try {
-            file.writeTo(Paths.get(
-                    graphEntity.getModelDirectory()
-            ));
+            file.writeTo(baseDirectory);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,13 +120,13 @@ final class RepositoryGeneratorImpl implements RepositoryGenerator {
     }
 
     private TypeSpec createRepositoryInterface(GraphEntity graphEntity,
-                                               ClassName parent){
-        String entityName = graphEntity.getClassName();
+                                               ClassName parent,
+                                               String entityName,
+                                               String packageStatement){
         String idType = graphEntity.getIdType();
-        String packageName = graphEntity.getPackageName();
         String repositoryName = entityName + name;
 
-        ClassName model = ClassName.get(packageName, entityName);
+        ClassName model = ClassName.get(packageStatement, entityName);
         ClassName id = ClassNameUtil.INSTANCE
                 .toBoxedType(
                         ClassName.get("", idType)
