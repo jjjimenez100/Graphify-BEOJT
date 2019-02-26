@@ -1,41 +1,29 @@
 
 package io.toro.ojtbe.jimenez.Graphify.core.generators;
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import io.toro.ojtbe.jimenez.Graphify.core.GraphEntity;
 import static org.junit.Assert.*;
-
-import org.junit.After;
 import org.junit.Test;
-
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class RepositoryGeneratorTest {
-
-    @After
-    public void deleteGeneratedFiles() throws IOException{
-        Path testingPath = Paths.get("src/test/java/io/query/");
-
-        if(Files.exists(testingPath)){
-            Files.walk(testingPath)
-                    .filter(Files::isRegularFile)
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-    }
-
     // Failing test case ; repository generator makes use of lastIndexOf
     // on "." to get the class name from the FQN
     @Test(expected = StringIndexOutOfBoundsException.class)
     public void givenInvalidFQN_whenCallingGenerateRepository_thenThrowStringIndexOutOfBoundsException()
             throws RepositoryGeneratorException {
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -51,9 +39,12 @@ public class RepositoryGeneratorTest {
     @Test
     public void givenPrimitiveAsPrimaryKey_whenCallingGenerateRepository_thenGenerateRepositoryFile()
             throws RepositoryGeneratorException, IOException {
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -67,7 +58,7 @@ public class RepositoryGeneratorTest {
 
         assertTrue(
                 Arrays.equals(
-                        Files.readAllBytes(Paths.get("src/test/java/io/query/PrimitiveRepository.java")),
+                        Files.readAllBytes(fileSystem.getPath("src/test/java/io/query/PrimitiveRepository.java")),
                                 Files.readAllBytes(Paths.get("src/test/resources/PrimitiveRepository.java"))
                 )
         );
@@ -76,9 +67,12 @@ public class RepositoryGeneratorTest {
     @Test
     public void givenNonPrimitiveAsPrimaryKey_whenCallingGenerateRepository_thenGenerateRepositoryFile()
         throws RepositoryGeneratorException, IOException{
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -92,7 +86,7 @@ public class RepositoryGeneratorTest {
 
         assertTrue(
                 Arrays.equals(
-                        Files.readAllBytes(Paths.get("src/test/java/io/query/NonPrimitiveRepository.java")),
+                        Files.readAllBytes(fileSystem.getPath("src/test/java/io/query/NonPrimitiveRepository.java")),
                         Files.readAllBytes(Paths.get("src/test/resources/NonPrimitiveRepository.java"))
                 )
         );
@@ -101,9 +95,12 @@ public class RepositoryGeneratorTest {
     @Test
     public void givenGraphEntity_whenCallingGenerateRepository_thenGenerateRepositoryFile()
             throws RepositoryGeneratorException{
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -117,7 +114,7 @@ public class RepositoryGeneratorTest {
 
         assertTrue(
                 Files.exists(
-                        Paths.get(
+                        fileSystem.getPath(
                                 "src/test/java/io/query/PersonRepository.java"
                         )
                 )
@@ -127,9 +124,12 @@ public class RepositoryGeneratorTest {
     @Test
     public void givenGraphEntityWithNoProperties_whenCallingGenerateRepository_GenerateRepositoryFile()
             throws RepositoryGeneratorException{
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -142,7 +142,7 @@ public class RepositoryGeneratorTest {
 
         assertTrue(
                 Files.exists(
-                        Paths.get(
+                        fileSystem.getPath(
                                 "src/test/java/io/query/CatRepository.java"
                         )
                 )
@@ -153,9 +153,12 @@ public class RepositoryGeneratorTest {
     // Java poet tries to access a null class name
     public void givenGraphEntityWithNoFQN_whenCallingGenerateRepository_thenThrowNPE()
             throws RepositoryGeneratorException{
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -171,9 +174,12 @@ public class RepositoryGeneratorTest {
     // Poet throws an NPE because of accessing a null class name
     public void givenGraphEntityWithNoIdType_whenCallingGenerateRepository_thenThrowNPE()
             throws RepositoryGeneratorException {
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -189,9 +195,12 @@ public class RepositoryGeneratorTest {
     // Repository generator does not make use of id name, so this should pass
     public void givenGraphEntityWithNoIdName_whenCallingGenerateRepository_thenGenerateRepositoryFile()
             throws RepositoryGeneratorException{
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
         RepositoryGenerator repositoryGenerator =
                 new RepositoryGeneratorImpl.Builder()
-                        .baseDirectory(Paths.get("src/test/java"))
+                        .baseDirectory(fileSystem.getPath("src/test/java"))
                         .build();
 
         GraphEntity graphEntity = new GraphEntity.Builder()
@@ -204,7 +213,7 @@ public class RepositoryGeneratorTest {
 
         assertTrue(
                 Files.exists(
-                        Paths.get(
+                        fileSystem.getPath(
                                 "src/test/java/io/query/DogRepository.java"
                         )
                 )
