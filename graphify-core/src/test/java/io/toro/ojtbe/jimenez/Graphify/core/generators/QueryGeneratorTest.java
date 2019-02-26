@@ -17,12 +17,16 @@ import static org.junit.Assert.*;
 
 public class QueryGeneratorTest {
 
-
+    @After
     public void deleteGeneratedFiles() throws IOException{
-        Files.walk(Paths.get("src/test/java/io/query/"))
-                .filter(Files::isRegularFile)
-                .map(Path::toFile)
-                .forEach(File::delete);
+        Path testingPath = Paths.get("src/test/java/io/query/");
+
+        if(Files.exists(testingPath)){
+            Files.walk(testingPath)
+                    .filter(Files::isRegularFile)
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     @Test
